@@ -1,0 +1,7 @@
+obligatorio2-compgraf/.vs
+
+obligatorio2-compgraf/x64/Debug/*
+!obligatorio2-compgraf/x64/Debug/*.dll
+
+obligatorio2-compgraf/x64/Release/*
+!obligatorio2-compgraf/x64/Release/*.dll
