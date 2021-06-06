@@ -148,7 +148,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ImageGenerator.cpp" />
     <ClCompile Include="obligatorio2-compgraf.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ImageGenerator.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
