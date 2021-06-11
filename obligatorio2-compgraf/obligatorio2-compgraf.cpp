@@ -22,10 +22,12 @@ int main(int argc, char* argv[]) {
     }
 
     SDL_Window *window = SDL_CreateWindow("Iluminacion Global", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
-    SDL_Renderer *renderer = SDL_GetRenderer(window);
+    SDL_Renderer *renderer = SDL_CreateRenderer(window, 0, 0);
     
     Scene* scene = new Scene();
     scene->loadSceneFromFile();
+
+    scene->render(renderer, SCREEN_WIDTH, SCREEN_HEIGHT);
 
     ImageGenerator::generateImage(renderer, SCREEN_WIDTH, SCREEN_HEIGHT);
     
