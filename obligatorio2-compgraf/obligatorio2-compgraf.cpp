@@ -29,7 +29,7 @@ int main(int argc, char* argv[]) {
 
     scene->render(renderer, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-    ImageGenerator::generateImage(renderer, SCREEN_WIDTH, SCREEN_HEIGHT);
+    ImageGenerator::generateImage(renderer, "final", SCREEN_WIDTH, SCREEN_HEIGHT);
     
     IMG_Quit();
     SDL_Quit();

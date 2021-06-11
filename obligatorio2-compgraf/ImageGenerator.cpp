@@ -2,21 +2,27 @@
 
 #include <ctime>
 #include <string>
+#include <filesystem>
 
 #include <SDL_image.h>
 #include <SDL.h>
 #include <iostream>
 
-void ImageGenerator::generateImage(SDL_Renderer* renderer, int width, int height) {
+void ImageGenerator::generateImage(SDL_Renderer* renderer, std::string imageName, int width, int height) {
     SDL_Surface* sceneRendering = SDL_CreateRGBSurface(0, width, height, 32, RED_MASK, GREEN_MASK, BLUE_MASK, ALPHA_MASK);
     SDL_RenderReadPixels(renderer, NULL, SDL_PIXELFORMAT_ARGB8888, sceneRendering->pixels, sceneRendering->pitch);
     
-    saveImage(sceneRendering);
+    std::string dirName = generateName();
+    std::filesystem::create_directory(dirName);
+    
+    std::string name = dirName + "/" + imageName + ".png";
+
+    saveImage(sceneRendering, name.c_str());
 
     SDL_FreeSurface(sceneRendering);
 }
 
-const char* ImageGenerator::generateImageName()
+std::string ImageGenerator::generateName()
 {
     struct tm localTime;
     std::time_t now = std::time(nullptr);
@@ -25,18 +31,15 @@ const char* ImageGenerator::generateImageName()
     char timestamp[15];
     std::strftime(timestamp, sizeof(timestamp), "%Y%m%d%H%M%S", &localTime);
     
-    std::string *imageName = new std::string("../resultados/");
-    imageName->append(timestamp);
-    imageName->append(".png");
+    std::string imageName = std::string("../resultados/");
+    imageName.append(timestamp);
 
-    return imageName->c_str();
+    return imageName;
 }
 
-void ImageGenerator::saveImage(SDL_Surface* surface)
+void ImageGenerator::saveImage(SDL_Surface* surface, const char* imageName)
 {
-    const char* imageName = generateImageName();
     if (IMG_SavePNG(surface, imageName) != 0) {
         std::cout << IMG_GetError() << std::endl;
     }
-    delete[] imageName;
 }
