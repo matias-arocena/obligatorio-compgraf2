@@ -17,6 +17,5 @@ private:
 
 	static std::string generateName();
 	static void saveImage(SDL_Surface* surface, const char* imageName);
-	static void createDirectory(std::string dirName);
 };
 
