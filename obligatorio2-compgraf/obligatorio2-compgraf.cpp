@@ -3,11 +3,9 @@
 #include <SDL.h>
 #include <SDL_image.h>
 
+#include "Constants.h"
 #include "ImageGenerator.h"
 #include "Scene.h"
-
-const int SCREEN_WIDTH = 1280;
-const int SCREEN_HEIGHT = 720;
 
 int main(int argc, char* argv[]) {
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
@@ -23,11 +21,11 @@ int main(int argc, char* argv[]) {
 
     SDL_Window *window = SDL_CreateWindow("Iluminacion Global", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
     SDL_Renderer *renderer = SDL_CreateRenderer(window, 0, 0);
-    
+
     Scene* scene = new Scene();
     scene->loadSceneFromFile();
 
-    scene->render(renderer, SCREEN_WIDTH, SCREEN_HEIGHT);
+    scene->render(renderer);
 
     ImageGenerator::generateImage(renderer, "final", SCREEN_WIDTH, SCREEN_HEIGHT);
     
