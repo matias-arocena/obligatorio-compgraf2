@@ -4,13 +4,14 @@
 class Ray
 {
 public:
-	Ray(glm::vec2 pixel, glm::vec3 projectionCenter);
-	glm::vec2 getPixel();
+	Ray(glm::vec3 pixel, glm::vec3 projectionCenter);
+	glm::vec3 getPixel();
 	glm::vec3 getProjectionCenter();
+	glm::vec3 pixel;
+	glm::vec3 dir;
+	glm::vec3 projectionCenter;
 
 private:
-	glm::vec2 pixel;
-	glm::vec3 projectionCenter;
 
 };
 

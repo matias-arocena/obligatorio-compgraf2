@@ -19,12 +19,12 @@ public:
 	void render(SDL_Renderer* renderer);
 private:
 	glm::vec3 projectionCenter;
-	std::vector<SceneObject> objects;
+	std::vector<SceneObject*> objects;
 	Color backgroudColor;
 
 	Color rayTrace(const Ray& ray, int depth);
 	Color shadow(CollisionPoint *hit, const Ray& ray, int depth);
 
-	CollisionPoint* getClosestObject(std::vector<CollisionPoint*> collisions);
+	CollisionPoint* getClosestObject(const Ray& ray, std::vector<CollisionPoint*> collisions);
 };
 

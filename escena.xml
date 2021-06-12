@@ -10,4 +10,4 @@
 	</node>
 </mesh>
 
-<projectionCenter x="1" y="2" z="3" />
+<projectionCenter x="0" y="0" z="100" />

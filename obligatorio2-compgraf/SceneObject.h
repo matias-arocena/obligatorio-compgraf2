@@ -1,5 +1,6 @@
 #pragma once
 #include <glm/glm.hpp>
+#include "Color.h"
 
 class Ray;
 
@@ -8,13 +9,18 @@ class SceneObject;
 struct CollisionPoint {
 	glm::vec3 normal;
 	glm::vec3 position;
+	glm::vec3 hitDir;
 	float angle;
 	SceneObject* object;
 };
 
 class SceneObject
 {
+protected:
+	glm::vec3 position;
 public:
-	CollisionPoint* intersects(const Ray& ray);
+	Color color;
+	bool solveQuadratic(const float& a, const float& b, const float& c, float& x0, float& x1);
+	virtual CollisionPoint* intersects(const Ray& ray);
 };
 

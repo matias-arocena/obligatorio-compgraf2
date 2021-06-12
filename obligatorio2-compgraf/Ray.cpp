@@ -1,10 +1,11 @@
 #include "Ray.h"
 
-Ray::Ray(glm::vec2 pixel, glm::vec3 projectionCenter) : pixel {pixel}, projectionCenter {projectionCenter}
+Ray::Ray(glm::vec3 pixel, glm::vec3 projectionCenter) : pixel {pixel}, projectionCenter {projectionCenter}
 { 
+	dir = glm::normalize(pixel - projectionCenter);
 }
 
-glm::vec2 Ray::getPixel()
+glm::vec3 Ray::getPixel()
 {
 	return pixel;
 }

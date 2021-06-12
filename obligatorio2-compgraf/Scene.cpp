@@ -7,6 +7,7 @@
 
 #include "Ray.h"
 #include "SceneObject.h"
+#include "Sphere.h"
 
 void Scene::loadSceneFromFile()
 {
@@ -21,6 +22,15 @@ void Scene::loadSceneFromFile()
 
 	std::cout << projectionCenter.x << "," << projectionCenter.y << "," << projectionCenter.z << std::endl;
 
+	Sphere* testSphere = new Sphere(500, glm::vec3(0, 0, -100));
+	testSphere->color = Color();
+	testSphere->color.red = 255;
+	testSphere->color.blue = 255;
+	testSphere->color.green = 0;
+	testSphere->color.reflection = 0;
+	testSphere->color.transmission = 0;
+	objects.push_back(testSphere);
+
 	//obtener bk del xml
 	backgroudColor.red = 0;
 	backgroudColor.green = 0;
@@ -34,7 +44,7 @@ void Scene::render(SDL_Renderer* renderer) {
 	for (int y = 0; y < SCREEN_HEIGHT; ++y) {
 		for (int x = 0; x < SCREEN_WIDTH; ++x) {
 			Ray ray(
-				glm::vec2(x, y),
+				glm::vec3(x, y, 0),
 				projectionCenter
 			);
 
@@ -50,12 +60,13 @@ Color Scene::rayTrace(const Ray& ray, int depth)
 {
 	std::vector<CollisionPoint*> intersections;
 	for (auto &obj : objects) {
-		CollisionPoint* hit = obj.intersects(ray);
+		CollisionPoint* hit = obj->intersects(ray);
 		if (hit != nullptr) {
+			//std::cout << "hit" << std::endl;
 			intersections.push_back(hit);
 		}
 	}
-	CollisionPoint* collisionPoint = getClosestObject(intersections);
+	CollisionPoint* collisionPoint = getClosestObject(ray, intersections);
 	if (collisionPoint != nullptr) {
 		return shadow(collisionPoint, ray, depth);
 	}
@@ -66,11 +77,24 @@ Color Scene::rayTrace(const Ray& ray, int depth)
 
 Color Scene::shadow(CollisionPoint* hit, const Ray& ray, int depth)
 {
-	return Color();
+	/*std::cout << "object color" << std::endl;
+	std::cout << "red " << hit->object->color.red << std::endl;
+	std::cout << "green " << hit->object->color.green << std::endl;
+	std::cout << "blue " << hit->object->color.blue << std::endl << std::endl;*/
+
+	return hit->object->color;
 }
 
 
-CollisionPoint* Scene::getClosestObject(std::vector<CollisionPoint*> collisions)
+CollisionPoint* Scene::getClosestObject(const Ray& ray, std::vector<CollisionPoint*> collisions)
 {
-	return nullptr;
+	CollisionPoint* curClosest = nullptr;
+	for (int i = 0; i < collisions.size(); i++)
+	{
+		if (curClosest == nullptr || collisions[i]->position.z < curClosest->position.z)
+		{
+			curClosest = collisions[i];
+		}
+	}
+	return curClosest;
 }
