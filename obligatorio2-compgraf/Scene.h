@@ -31,7 +31,8 @@ private:
 	
 	CollisionPoint* getClosestObject(const Ray& ray, std::vector<CollisionPoint*> collisions);
 	Color getAmbientColor(const SceneObject& object);
-	Ray getReflectiveRay(const Ray& ray, float reflectionCoefficient);
-	Ray getTransmissionRay(const Ray& ray, float transmissionCoefficient);
+	Ray getReflectiveRay(const Ray& ray, double reflectionCoefficient);
+	Ray getTransmissionRay(const Ray& ray, double transmissionCoefficient);
+	bool isTotalInternalReflection(double outMediumCoefficient, double inMediumCoefficient);
 };
 

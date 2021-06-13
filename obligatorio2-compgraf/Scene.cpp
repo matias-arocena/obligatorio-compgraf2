@@ -84,8 +84,8 @@ Color Scene::shadow(CollisionPoint* hit, const Ray& ray, int depth)
 
 	Color color = getAmbientColor(*hit->object);
 
-	float specularCoefficient;
-	float transmissionCoefficient;
+	double specularCoefficient;
+	double transmissionCoefficient;
 
 	for (PositionLight *light : lights) {
 		glm::vec3 rayToLigth = hit->position - light->getPosition();
@@ -104,11 +104,16 @@ Color Scene::shadow(CollisionPoint* hit, const Ray& ray, int depth)
 		if (hit->object->getReflectionCoefficient() > 0) {
 			Ray reflectiveRay = getReflectiveRay(ray, hit->object->getReflectionCoefficient());
 			Color reflectiveColor = rayTrace(reflectiveRay, depth + 1);
+			// TODO: Escalar reflectiveColor por el coeficiente especular y añadir color
 		}
 		
 		if (hit->object->getTransmissionCoefficient() > 0) {
-			//TODO
-		
+			if (!isTotalInternalReflection(AIR, GLASS)) {
+				Ray transmissionRay = getTransmissionRay(ray, hit->object->getTransmissionCoefficient());
+				Color transmissionColor = rayTrace(transmissionRay, depth + 1);
+				// TODO: Escalar transmissionColor por el coeficiente de transmision y añadir color
+
+			}
 		}
 	}
 
@@ -134,12 +139,17 @@ Color Scene::getAmbientColor(const SceneObject& object)
 	return Color();
 }
 
-Ray Scene::getReflectiveRay(const Ray& ray, float reflectionCoefficient)
+Ray Scene::getReflectiveRay(const Ray& ray, double reflectionCoefficient)
 {
-	return Ray();
+	return Ray(glm::vec3(0,0,0), glm::vec3(0, 0, 0));
 }
 
-Ray Scene::getTransmissionRay(const Ray& ray, float transmissionCoefficient)
+Ray Scene::getTransmissionRay(const Ray& ray, double transmissionCoefficient)
 {
-	return Ray();
+	return Ray(glm::vec3(0, 0, 0), glm::vec3(0, 0, 0));
+}
+
+bool Scene::isTotalInternalReflection(double outMediumCoefficient, double inMediumCoefficient)
+{
+	return false;
 }
