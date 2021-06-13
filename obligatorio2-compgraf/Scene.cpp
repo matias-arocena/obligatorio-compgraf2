@@ -82,6 +82,36 @@ Color Scene::shadow(CollisionPoint* hit, const Ray& ray, int depth)
 	std::cout << "green " << hit->object->color.green << std::endl;
 	std::cout << "blue " << hit->object->color.blue << std::endl << std::endl;*/
 
+	Color color = getAmbientColor(*hit->object);
+
+	float specularCoefficient;
+	float transmissionCoefficient;
+
+	for (PositionLight *light : lights) {
+		glm::vec3 rayToLigth = hit->position - light->getPosition();
+
+		if (glm::dot(hit->normal, rayToLigth) > 0) {
+			/*
+			* TODO:
+			Calcular cuánta luz es bloqueada por sup. opacas y transp., y
+			usarlo para escalar los términos difusos y especulares antes de
+			añadirlos a color;
+			*/
+		}
+	}
+
+	if (depth < maxDepth) {
+		if (hit->object->getReflectionCoefficient() > 0) {
+			Ray reflectiveRay = getReflectiveRay(ray, hit->object->getReflectionCoefficient());
+			Color reflectiveColor = rayTrace(reflectiveRay, depth + 1);
+		}
+		
+		if (hit->object->getTransmissionCoefficient() > 0) {
+			//TODO
+		
+		}
+	}
+
 	return hit->object->color;
 }
 
@@ -97,4 +127,19 @@ CollisionPoint* Scene::getClosestObject(const Ray& ray, std::vector<CollisionPoi
 		}
 	}
 	return curClosest;
+}
+
+Color Scene::getAmbientColor(const SceneObject& object)
+{
+	return Color();
+}
+
+Ray Scene::getReflectiveRay(const Ray& ray, float reflectionCoefficient)
+{
+	return Ray();
+}
+
+Ray Scene::getTransmissionRay(const Ray& ray, float transmissionCoefficient)
+{
+	return Ray();
 }

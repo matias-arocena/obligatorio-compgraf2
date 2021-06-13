@@ -18,9 +18,13 @@ class SceneObject
 {
 protected:
 	glm::vec3 position;
+	float reflectionCoefficient;
+	float transmissionCoefficient;
 public:
 	Color color;
 	bool solveQuadratic(const float& a, const float& b, const float& c, float& x0, float& x1);
 	virtual CollisionPoint* intersects(const Ray& ray);
+	float getReflectionCoefficient();
+	float getTransmissionCoefficient();
 };
 

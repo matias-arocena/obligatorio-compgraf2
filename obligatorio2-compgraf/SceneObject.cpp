@@ -6,6 +6,16 @@ CollisionPoint* SceneObject::intersects(const Ray& ray)
     return nullptr;
 }
 
+float SceneObject::getReflectionCoefficient()
+{
+    return reflectionCoefficient;
+}
+
+float SceneObject::getTransmissionCoefficient()
+{
+    return transmissionCoefficient;
+}
+
 bool SceneObject::solveQuadratic(const float& a, const float& b, const float& c, float& x0, float& x1)
 {
     float discr = b * b - 4 * a * c;
