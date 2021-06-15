@@ -5,14 +5,18 @@ Ray::Ray(glm::vec3 pixel, glm::vec3 projectionCenter) : pixel {pixel}, projectio
 	dir = glm::normalize(pixel - projectionCenter);
 }
 
-glm::vec3 Ray::getPixel()
+glm::vec3 Ray::getPixel() const
 {
 	return pixel;
 }
 
-glm::vec3 Ray::getProjectionCenter()
+glm::vec3 Ray::getProjectionCenter() const
 {
 	return projectionCenter;
 }
 
+glm::vec3 Ray::getDir() const 
+{
+	return dir;
+}
 

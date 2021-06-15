@@ -33,6 +33,6 @@ private:
 	Color getAmbientColor(const SceneObject& object);
 	Ray getReflectiveRay(const Ray& ray, double reflectionCoefficient);
 	Ray getTransmissionRay(const Ray& ray, double transmissionCoefficient);
-	bool isTotalInternalReflection(double outMediumCoefficient, double inMediumCoefficient);
+	bool isTotalInternalReflection(double incidenceAngle, double outMediumCoefficient, double inMediumCoefficient);
 };
 

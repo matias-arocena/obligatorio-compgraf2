@@ -84,19 +84,24 @@ Color Scene::shadow(CollisionPoint* hit, const Ray& ray, int depth)
 
 	Color color = getAmbientColor(*hit->object);
 
-	double specularCoefficient;
-	double transmissionCoefficient;
+	//TODO: Averiguar de donde sacar esta info
+	double specularCoefficient = 1.0;
+	double transmissionCoefficient = 1.0;
 
 	for (PositionLight *light : lights) {
-		glm::vec3 rayToLigth = hit->position - light->getPosition();
+		Ray rayToLight(light->getPosition(), hit->position);
 
-		if (glm::dot(hit->normal, rayToLigth) > 0) {
-			/*
-			* TODO:
-			Calcular cuánta luz es bloqueada por sup. opacas y transp., y
-			usarlo para escalar los términos difusos y especulares antes de
-			añadirlos a color;
-			*/
+		if (glm::dot(hit->normal, rayToLight.getDir()) > 0) {
+
+			std::vector<CollisionPoint*> intersections;
+			for (auto &obj : objects) {
+				CollisionPoint* hit = obj->intersects(rayToLight);
+				if (hit != nullptr) {
+					//std::cout << "hit" << std::endl;
+					intersections.push_back(hit);
+				}
+			}					
+			
 		}
 	}
 
@@ -108,7 +113,8 @@ Color Scene::shadow(CollisionPoint* hit, const Ray& ray, int depth)
 		}
 		
 		if (hit->object->getTransmissionCoefficient() > 0) {
-			if (!isTotalInternalReflection(AIR, GLASS)) {
+			//TODO: Obtener los medios del rayo
+			if (!isTotalInternalReflection(hit->angle, AIR, GLASS)) {
 				Ray transmissionRay = getTransmissionRay(ray, hit->object->getTransmissionCoefficient());
 				Color transmissionColor = rayTrace(transmissionRay, depth + 1);
 				// TODO: Escalar transmissionColor por el coeficiente de transmision y añadir color
@@ -136,20 +142,28 @@ CollisionPoint* Scene::getClosestObject(const Ray& ray, std::vector<CollisionPoi
 
 Color Scene::getAmbientColor(const SceneObject& object)
 {
-	return Color();
+	Color color;
+	color.red = object.color.red + ambient.getIntensity() * ambient.getColor().red;
+	color.green = object.color.green + ambient.getIntensity() * ambient.getColor().green;
+	color.blue = object.color.red + ambient.getIntensity() * ambient.getColor().red;
+	return color;
 }
 
+// TODO
 Ray Scene::getReflectiveRay(const Ray& ray, double reflectionCoefficient)
 {
 	return Ray(glm::vec3(0,0,0), glm::vec3(0, 0, 0));
 }
 
+// TODO
 Ray Scene::getTransmissionRay(const Ray& ray, double transmissionCoefficient)
 {
 	return Ray(glm::vec3(0, 0, 0), glm::vec3(0, 0, 0));
 }
 
-bool Scene::isTotalInternalReflection(double outMediumCoefficient, double inMediumCoefficient)
+bool Scene::isTotalInternalReflection(double incidenceAngle, double outMediumCoefficient, double inMediumCoefficient)
 {
-	return false;
+	if (outMediumCoefficient < inMediumCoefficient)
+		return false;
+	return incidenceAngle > std::asin(inMediumCoefficient/outMediumCoefficient);
 }

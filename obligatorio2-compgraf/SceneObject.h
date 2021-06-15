@@ -22,7 +22,8 @@ protected:
 	float transmissionCoefficient;
 public:
 	Color color;
-	bool solveQuadratic(const float& a, const float& b, const float& c, float& x0, float& x1);
+
+	bool solveQuadratic(const double& a, const double& b, const double& c, double& x0, double& x1);
 	virtual CollisionPoint* intersects(const Ray& ray);
 	float getReflectionCoefficient();
 	float getTransmissionCoefficient();
