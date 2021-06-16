@@ -3,6 +3,7 @@
 
 #include <glm/glm.hpp>
 
+#include "Camera.h"
 #include "Constants.h"
 #include "Color.h"
 #include "Light.h"
@@ -16,6 +17,7 @@ struct SDL_Renderer;
 class Scene
 {
 public:
+	Scene();
 	void loadSceneFromFile();
 	void render(SDL_Renderer* renderer);
 private:
@@ -23,16 +25,16 @@ private:
 	glm::vec3 projectionCenter;
 	std::vector<SceneObject*> objects;
 	std::vector<PositionLight*> lights;
-	Light ambient;
+	Camera *camera;
+	Light *ambientLight;
 	Color backgroudColor;
 
 	Color rayTrace(const Ray& ray, int depth);
 	Color shadow(CollisionPoint *hit, const Ray& ray, int depth);
 	
 	CollisionPoint* getClosestObject(const Ray& ray, std::vector<CollisionPoint*> collisions);
-	Color getAmbientColor(const SceneObject& object);
-	Ray getReflectiveRay(const Ray& ray, double reflectionCoefficient);
-	Ray getTransmissionRay(const Ray& ray, double transmissionCoefficient);
+	Ray getReflectiveRay(const Ray& ray, const CollisionPoint& hit);
+	Ray getTransmissionRay(const Ray& ray, const CollisionPoint&hit);
 	bool isTotalInternalReflection(double incidenceAngle, double outMediumCoefficient, double inMediumCoefficient);
 };
 

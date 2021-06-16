@@ -16,6 +16,11 @@ float SceneObject::getTransmissionCoefficient()
     return transmissionCoefficient;
 }
 
+float SceneObject::getMedium()
+{
+    return 0.0f;
+}
+
 bool SceneObject::solveQuadratic(const double& a, const double& b, const double& c, double& x0, double& x1)
 {
     double discr = b * b - 4.0 * a * c;

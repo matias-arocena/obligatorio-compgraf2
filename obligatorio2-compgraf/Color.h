@@ -1,8 +1,9 @@
 #pragma once
+
+#include <glm/glm.hpp>
+
 struct Color {
-	int red;
-	int green;
-	int blue;
+	glm::vec3 rgb;
 	int reflection;
 	int transmission;
 };

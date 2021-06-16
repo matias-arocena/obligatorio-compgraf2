@@ -4,7 +4,8 @@
 
 CollisionPoint* Sphere::intersects(const Ray& ray)
 {
-    float t0, t1; // solutions for t if the ray intersects 
+    double t0, t1; // solutions for t if the ray intersects 
+    
 
     glm::vec3 L = ray.getPixel() - position;
     float a = glm::dot(ray.getDir(), ray.getDir());
@@ -25,11 +26,12 @@ CollisionPoint* Sphere::intersects(const Ray& ray)
     }
 
     CollisionPoint* closestPoint = new CollisionPoint();
-    closestPoint->position = ray.getPixel() + ray.getDir() * t0;
+    closestPoint->position = ray.getPixel() + ray.getDir() * (float) t0;
     closestPoint->normal = glm::normalize(closestPoint->position - position);
     closestPoint->hitDir = ray.getDir();
     closestPoint->angle = std::asin(glm::dot(ray.getDir(), closestPoint->normal));
     closestPoint->object = this;
+    closestPoint->distanceFromOrigin = t0;
 
     return closestPoint;
 }

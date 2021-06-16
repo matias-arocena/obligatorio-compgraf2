@@ -12,6 +12,7 @@ struct CollisionPoint {
 	glm::vec3 hitDir;
 	float angle;
 	SceneObject* object;
+	float distanceFromOrigin;
 };
 
 class SceneObject
@@ -21,11 +22,14 @@ protected:
 	float reflectionCoefficient;
 	float transmissionCoefficient;
 public:
-	Color color;
+	Color ambient;
+	Color specular;
+	Color diffuse;
 
 	bool solveQuadratic(const double& a, const double& b, const double& c, double& x0, double& x1);
 	virtual CollisionPoint* intersects(const Ray& ray);
 	float getReflectionCoefficient();
 	float getTransmissionCoefficient();
+	float getMedium();
 };
 

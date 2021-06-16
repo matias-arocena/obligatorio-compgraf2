@@ -4,6 +4,7 @@
 class Light
 {
 public:
+	Light(Color color, float intensity);
 	Color getColor();
 	float getIntensity();
 protected:
