@@ -4,16 +4,11 @@
 class Ray
 {
 public:
-	Ray(glm::vec3 pixel, glm::vec3 projectionCenter);
-	glm::vec3 getPixel() const;
-	glm::vec3 getProjectionCenter() const;
-	glm::vec3 getDir() const;
-	void setDir(glm::vec3 dir);
-	void setProjectionCenter(glm::vec3 projectionCenter);
-	void setPixel(glm::vec3 pixel);
+	Ray(glm::vec3 origin, glm::vec3 direction);
+	glm::vec3 getOrigin() const;
+	glm::vec3 getDirection() const;
 private:
-	glm::vec3 pixel;
-	glm::vec3 dir;
-	glm::vec3 projectionCenter;
+	glm::vec3 origin;
+	glm::vec3 direction;
 };
 

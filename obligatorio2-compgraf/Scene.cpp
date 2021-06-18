@@ -28,7 +28,7 @@ void Scene::loadSceneFromFile()
 
 	std::cout << projectionCenter.x << "," << projectionCenter.y << "," << projectionCenter.z << std::endl;
 
-	Sphere* testSphere = new Sphere(500, glm::vec3(0, 0, -100));
+	Sphere* testSphere = new Sphere(.5f, glm::vec3(0, 0, 1));
 	testSphere->ambient = Color();
 	testSphere->ambient.rgb.r = 255;
 	testSphere->ambient.rgb.g = 255;
@@ -50,6 +50,9 @@ void Scene::loadSceneFromFile()
 	testSphere->diffuse.reflection = 0;
 	testSphere->diffuse.transmission = 0;
 
+	testSphere->color = Color();
+	testSphere->color.rgb = glm::vec3(255, 0, 255);
+
 	objects.push_back(testSphere);
 
 	Color white;
@@ -61,12 +64,12 @@ void Scene::loadSceneFromFile()
 	lights.push_back(l);
 
 	//obtener bk del xml
-	backgroudColor.rgb = glm::vec3(0, 0, 0);
+	backgroudColor.rgb = glm::vec3(255, 255, 0);
 	backgroudColor.reflection = 0;
 	backgroudColor.transmission = 0;
 
 	//TODO: obtener camara de xml
-	camera = new Camera(glm::vec3(0, 0, 0));
+	camera = new Camera(glm::vec3(0, 0, 0) , 1.f, 1.f);
 
 	maxDepth = 2;
 }
@@ -74,9 +77,11 @@ void Scene::loadSceneFromFile()
 void Scene::render(SDL_Renderer* renderer) {
 	for (int y = 0; y < SCREEN_HEIGHT; ++y) {
 		for (int x = 0; x < SCREEN_WIDTH; ++x) {
+			double u = (double)x / SCREEN_WIDTH;
+			double v = (double)y / SCREEN_HEIGHT;
 			Ray ray(
-				glm::vec3(x, y, 0),
-				projectionCenter
+				camera->getPosition(),
+				camera->getDirectionToViewport(u, v)
 			);
 
 			Color pixel(rayTrace(ray, 1));
@@ -93,13 +98,13 @@ Color Scene::rayTrace(const Ray& ray, int depth)
 	for (auto &obj : objects) {
 		CollisionPoint* hit = obj->intersects(ray);
 		if (hit != nullptr) {
-			//std::cout << "hit" << std::endl;
 			intersections.push_back(hit);
 		}
 	}
 	CollisionPoint* collisionPoint = getClosestObject(ray, intersections);
 	if (collisionPoint != nullptr) {
-		return shadow(collisionPoint, ray, depth);
+//		return shadow(collisionPoint, ray, depth);
+		return collisionPoint->object->color;
 	}
 	else {
 		return backgroudColor;
@@ -125,7 +130,7 @@ Color Scene::shadow(CollisionPoint* hit, const Ray& ray, int depth)
 
 	double reflectionCoefficient = 1.0;
 	double transmissionCoefficient = 1.0;
-	
+/*
 	for (PositionLight *light : lights) {
 		Ray rayToLight(light->getPosition(), hit->position);
 
@@ -174,9 +179,12 @@ Color Scene::shadow(CollisionPoint* hit, const Ray& ray, int depth)
 	float red = ambient.rgb[0] * ambientK / (ambientK + diffuseK + specularK) + diffuse.rgb[0] * diffuseK / (ambientK + diffuseK + specularK) + specular.rgb[0] * specularK / (ambientK + diffuseK + specularK);
 	float green = ambient.rgb[1] * ambientK / (ambientK + diffuseK + specularK) + diffuse.rgb[1] * diffuseK / (ambientK + diffuseK + specularK) + specular.rgb[1] * specularK / (ambientK + diffuseK + specularK);
 	float blue = ambient.rgb[2] * ambientK / (ambientK + diffuseK + specularK) + diffuse.rgb[2] * diffuseK / (ambientK + diffuseK + specularK) + specular.rgb[2] * specularK / (ambientK + diffuseK + specularK);
+	*/
+
 
 	Color result;
-	result.rgb = glm::vec3(red, green, blue);
+	//result.rgb = glm::vec3(red, green, blue);
+	result.rgb = glm::vec3(0, 0, 0);
 	result.reflection = hit->object->getReflectionCoefficient();
 	result.transmission = hit->object->getTransmissionCoefficient();
 	return result;
