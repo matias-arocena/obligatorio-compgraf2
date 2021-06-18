@@ -6,12 +6,12 @@ Ray::Ray(glm::vec3 origin, glm::vec3 direction) : origin {origin}, direction {gl
 
 glm::vec3 Ray::getOrigin() const
 {
-	return glm::vec3();
+	return origin;
 }
 
 glm::vec3 Ray::getDirection() const
 {
-	return glm::vec3();
+	return direction;
 }
 
 

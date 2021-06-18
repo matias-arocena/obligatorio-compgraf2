@@ -30,7 +30,7 @@ private:
 	Color backgroudColor;
 
 	Color rayTrace(const Ray& ray, int depth);
-	Color shadow(CollisionPoint *hit, const Ray& ray, int depth);
+	Color shadow(const CollisionPoint *hit, const Ray& ray, int depth);
 	
 	CollisionPoint* getClosestObject(const Ray& ray, std::vector<CollisionPoint*> collisions);
 	Ray getReflectiveRay(const Ray& ray, const CollisionPoint& hit);

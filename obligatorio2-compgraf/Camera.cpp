@@ -4,10 +4,12 @@
 
 Camera::Camera(glm::vec3 position, float near, float viewportHeight) : position{ position }, near{ near }, viewportHeight{ viewportHeight }
 {
-    viewportWidth = (SCREEN_HEIGHT / SCREEN_WIDTH) * viewportHeight;
+    
+    viewportWidth = ASPECT_RATIO * viewportHeight;
     uAxis = glm::vec3(viewportWidth, 0.f, 0.f);
     vAxis = glm::vec3(0.f, viewportHeight, 0.f);
-    viewportCorner = position - uAxis / 2.f - vAxis / 2.f + near;
+
+    viewportCorner = position - uAxis / 2.f - vAxis / 2.f + glm::vec3(0,0, near);
 }
 
 glm::vec3 Camera::getPosition()

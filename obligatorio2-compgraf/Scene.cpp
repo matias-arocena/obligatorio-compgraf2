@@ -28,65 +28,58 @@ void Scene::loadSceneFromFile()
 
 	std::cout << projectionCenter.x << "," << projectionCenter.y << "," << projectionCenter.z << std::endl;
 
-	Sphere* testSphere = new Sphere(.5f, glm::vec3(0, 0, 1));
-	testSphere->ambient = Color();
-	testSphere->ambient.rgb.r = 255;
-	testSphere->ambient.rgb.g = 255;
-	testSphere->ambient.rgb.b = 0;
-	testSphere->ambient.reflection = 0;
-	testSphere->ambient.transmission = 0;
-
-	testSphere->specular = Color();
-	testSphere->specular.rgb.r = 255;
-	testSphere->specular.rgb.g = 255;
-	testSphere->specular.rgb.b = 0;
-	testSphere->specular.reflection = 0;
-	testSphere->specular.transmission = 0;
-
-	testSphere->diffuse = Color();
-	testSphere->diffuse.rgb.r = 255;
-	testSphere->diffuse.rgb.g = 255;
-	testSphere->diffuse.rgb.b = 0;
-	testSphere->diffuse.reflection = 0;
-	testSphere->diffuse.transmission = 0;
-
+	Sphere* testSphere = new Sphere(.5f, glm::vec3(0.0, 0.0, 1.f));
 	testSphere->color = Color();
 	testSphere->color.rgb = glm::vec3(255, 0, 255);
-
 	objects.push_back(testSphere);
+
+	Sphere* world = new Sphere(105.f, glm::vec3(0.0, 110.0, 1.f));
+	world->color = Color();
+	world->color.rgb = glm::vec3(0, 255, 0);
+	objects.push_back(world);
 
 	Color white;
 	white.rgb = glm::vec3(255, 255, 255);
 	ambientLight = new Light(white, 0.3f);
 	
 	//obtener luz de xml
-	PositionLight* l = new PositionLight(glm::vec3(100,100,100), white, 1);
+	PositionLight* l = new PositionLight(glm::vec3(1,-2,-0.5), white, 1);
 	lights.push_back(l);
 
 	//obtener bk del xml
-	backgroudColor.rgb = glm::vec3(255, 255, 0);
+	backgroudColor.rgb = glm::vec3(0, 0, 0);
 	backgroudColor.reflection = 0;
 	backgroudColor.transmission = 0;
 
 	//TODO: obtener camara de xml
-	camera = new Camera(glm::vec3(0, 0, 0) , 1.f, 1.f);
+	camera = new Camera(glm::vec3(0, 0, 0) , 1.f, 2.f);
 
 	maxDepth = 2;
 }
 
 void Scene::render(SDL_Renderer* renderer) {
+	double auxX;
+	double auxU;
 	for (int y = 0; y < SCREEN_HEIGHT; ++y) {
+		double v = (double)y / SCREEN_HEIGHT;
 		for (int x = 0; x < SCREEN_WIDTH; ++x) {
 			double u = (double)x / SCREEN_WIDTH;
-			double v = (double)y / SCREEN_HEIGHT;
+
+
 			Ray ray(
 				camera->getPosition(),
 				camera->getDirectionToViewport(u, v)
 			);
-
+			if (x == SCREEN_WIDTH / 2 && y == SCREEN_HEIGHT / 2) {
+				Ray ray(
+					camera->getPosition(),
+					camera->getDirectionToViewport(u, v)
+				);
+			}
 			Color pixel(rayTrace(ray, 1));
 
-			SDL_SetRenderDrawColor(renderer, pixel.rgb[0], pixel.rgb[1], pixel.rgb[2], SDL_ALPHA_OPAQUE);
+			// std::cout << "(" << x << "," << y << ") (" << u << "," << v << ") (" << pixel.rgb.r << "," << pixel.rgb.g << "," << pixel.rgb.b << ")" << std::endl;
+			SDL_SetRenderDrawColor(renderer, pixel.rgb.r, pixel.rgb.g, pixel.rgb.b, SDL_ALPHA_OPAQUE);
 			SDL_RenderDrawPoint(renderer, x, y);
 		}
 	}
@@ -103,22 +96,22 @@ Color Scene::rayTrace(const Ray& ray, int depth)
 	}
 	CollisionPoint* collisionPoint = getClosestObject(ray, intersections);
 	if (collisionPoint != nullptr) {
-//		return shadow(collisionPoint, ray, depth);
-		return collisionPoint->object->color;
+		return shadow(collisionPoint, ray, depth);
 	}
 	else {
-		return backgroudColor;
+
+		glm::vec3 rgb = backgroudColor.rgb;
+		Color color;
+		color.rgb = rgb;
+		return color;
 	}
 }
 
-Color Scene::shadow(CollisionPoint* hit, const Ray& ray, int depth)
+Color Scene::shadow(const CollisionPoint* hit, const Ray& ray, int depth)
 {
-
-	Color ambient;
-	//	ambient.rgb = hit->object->ambient.rgb + ambientLight->getColor().rgb * ambientLight->getIntensity();
-	ambient.rgb = hit->object->ambient.rgb;
 	Color diffuse;
-	diffuse.rgb = hit->object->diffuse.rgb;
+	diffuse.rgb = glm::vec3(0, 0, 0);
+	/*
 	Color specular;
 	specular.rgb = hit->object->specular.rgb;
 	Color transparency;
@@ -130,19 +123,38 @@ Color Scene::shadow(CollisionPoint* hit, const Ray& ray, int depth)
 
 	double reflectionCoefficient = 1.0;
 	double transmissionCoefficient = 1.0;
-/*
-	for (PositionLight *light : lights) {
-		Ray rayToLight(light->getPosition(), hit->position);
+*/
+	for (PositionLight* light : lights) {
+		Ray rayToLight(hit->position, light->getPosition() - hit->position);
 
-		if (glm::dot(hit->normal, rayToLight.getDir()) > 0) {
+		if (glm::dot(hit->normal, rayToLight.getDirection()) > 0) {
 			bool intersects = false;
 			for (auto& obj : objects) {
-				CollisionPoint* hit = obj->intersects(rayToLight);
-				if (hit != nullptr && hit->distanceFromOrigin < glm::length(light->getPosition() - hit->position)) {
+				CollisionPoint* otherHit = obj->intersects(rayToLight);
+				if (otherHit != nullptr && otherHit->distanceFromOrigin < glm::length(light->getPosition() - otherHit->position)) {
+					if (otherHit->object != hit->object) {
+						intersects = true;
+					}
 					intersects = true;
 					break;
 				}
-			}					
+			}
+			if (!intersects) {
+
+				diffuse.rgb += hit->object->color.rgb;
+
+			}
+		}
+	}
+	Color result;
+
+	result.rgb = (hit->object->color.rgb * ambientLight->getIntensity())  + diffuse.rgb;
+	result.rgb.r = (result.rgb.r * (result.rgb.r >= 0) * (result.rgb.r < 256)) + 255 * (result.rgb.r > 255);
+	result.rgb.g = (result.rgb.g * (result.rgb.g >= 0) * (result.rgb.g < 256)) + 255 * (result.rgb.g > 255);
+	result.rgb.b = (result.rgb.b * (result.rgb.b >= 0) * (result.rgb.b < 256)) + 255 * (result.rgb.b > 255);
+
+	return result;
+			/*
 			if (!intersects) {
 				diffuseK += light->getIntensity() * std::max(0.f, glm::dot(hit->normal, -rayToLight.getDir()));
 
@@ -179,7 +191,6 @@ Color Scene::shadow(CollisionPoint* hit, const Ray& ray, int depth)
 	float red = ambient.rgb[0] * ambientK / (ambientK + diffuseK + specularK) + diffuse.rgb[0] * diffuseK / (ambientK + diffuseK + specularK) + specular.rgb[0] * specularK / (ambientK + diffuseK + specularK);
 	float green = ambient.rgb[1] * ambientK / (ambientK + diffuseK + specularK) + diffuse.rgb[1] * diffuseK / (ambientK + diffuseK + specularK) + specular.rgb[1] * specularK / (ambientK + diffuseK + specularK);
 	float blue = ambient.rgb[2] * ambientK / (ambientK + diffuseK + specularK) + diffuse.rgb[2] * diffuseK / (ambientK + diffuseK + specularK) + specular.rgb[2] * specularK / (ambientK + diffuseK + specularK);
-	*/
 
 
 	Color result;
@@ -188,6 +199,7 @@ Color Scene::shadow(CollisionPoint* hit, const Ray& ray, int depth)
 	result.reflection = hit->object->getReflectionCoefficient();
 	result.transmission = hit->object->getTransmissionCoefficient();
 	return result;
+	*/
 
 }
 

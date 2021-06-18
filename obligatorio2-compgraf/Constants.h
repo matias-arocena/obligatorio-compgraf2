@@ -1,7 +1,8 @@
 #pragma once
 
-const int SCREEN_WIDTH = 1280;
-const int SCREEN_HEIGHT = 720;
+const double ASPECT_RATIO = 16.0 / 9.0;
+const int SCREEN_WIDTH = 720;
+const int SCREEN_HEIGHT = static_cast<int>(SCREEN_WIDTH/ASPECT_RATIO);
 
 const double VACUUM = 1.0f;
 const double AIR = 1.00029f;
