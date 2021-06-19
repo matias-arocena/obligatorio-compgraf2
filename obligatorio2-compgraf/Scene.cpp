@@ -35,9 +35,20 @@ void Scene::loadSceneFromFile()
 	testSphere->specular.rgb = glm::vec3(1, 0, 0);
 	testSphere->shininess = 2.f;
 	testSphere->reflectionCoefficient = 2.f;
-
-
 	objects.push_back(testSphere);
+
+	Sphere* testSphere2 = new Sphere(.5f, glm::vec3(-1.5, 1.0, 2.f));
+	testSphere2->diffuse = Color();
+	testSphere2->diffuse.rgb = glm::vec3(0, 0, 0);
+	testSphere2->ambient = Color();
+	testSphere2->ambient.rgb = glm::vec3(0, 0, 0);
+	testSphere2->specular = Color();
+	testSphere2->specular.rgb = glm::vec3(0, 0, 0);
+	testSphere2->shininess = 2.f;
+	testSphere2->reflectionCoefficient = 5.f;
+
+
+	objects.push_back(testSphere2);
 
 	Sphere* world = new Sphere(105.f, glm::vec3(0.0, 110.0, 2.f));
 	world->diffuse = Color();
@@ -46,8 +57,8 @@ void Scene::loadSceneFromFile()
 	world->ambient.rgb = glm::vec3(0, 1, 0);
 	world->specular = Color();
 	world->specular.rgb = glm::vec3(1, 0, 0);
-	world->shininess = 0;
-	world->reflectionCoefficient = 0;
+	world->shininess = 0.f;
+	world->reflectionCoefficient = 0.f;
 
 	objects.push_back(world);
 
@@ -174,10 +185,23 @@ Color Scene::shadow(const CollisionPoint* hit, const Ray& ray, int depth)
 		}
 	}
 	Color result;
+	result.rgb = glm::vec3(0, 0, 0);
+	if (depth < maxDepth && hit->object->getReflectionCoefficient() > 0) {
+		float kr;
+		fresnel(hit->hitDir, hit->normal, hit->object->getReflectionCoefficient(), kr);
 
+		Color reflectiveColor;
+		if (hit->object->getReflectionCoefficient() > 0) {
+			Ray reflectiveRay = getReflectiveRay(ray, *hit);
+			reflectiveColor = rayTrace(reflectiveRay, depth + 1);
+		}
+
+		result.rgb = reflectiveColor.rgb * kr;
+
+	}
 	//diffuse.rgb = brightness * hit->object->diffuse.rgb;
 
-	result.rgb = hit->object->ambient.rgb * ambientLight->getIntensity() + diffuse.rgb + specular.rgb;
+	result.rgb += hit->object->ambient.rgb * ambientLight->getIntensity() + diffuse.rgb + specular.rgb;
 	result.rgb.r = result.rgb.r * (result.rgb.r < 1.f) + (result.rgb.r >= 1);
 	result.rgb.g = result.rgb.g * (result.rgb.g < 1.f) + (result.rgb.g >= 1);
 	result.rgb.b = result.rgb.b * (result.rgb.b < 1.f) + (result.rgb.b >= 1);
@@ -234,6 +258,28 @@ Color Scene::shadow(const CollisionPoint* hit, const Ray& ray, int depth)
 
 }
 
+void Scene::fresnel(const glm::vec3& I, const glm::vec3& N, const float& ior, float& kr)
+{
+	float cosi = glm::clamp(-1.f, 1.f, glm::dot(I, N));
+	float etai = 1, etat = ior;
+	if (cosi > 0) { std::swap(etai, etat); }
+	// Compute sini using Snell's law
+	float sint = etai / etat * sqrtf(std::max(0.f, 1 - cosi * cosi));
+	// Total internal reflection
+	if (sint >= 1) {
+		kr = 1;
+	}
+	else {
+		float cost = sqrtf(std::max(0.f, 1 - sint * sint));
+		cosi = fabsf(cosi);
+		float Rs = ((etat * cosi) - (etai * cost)) / ((etat * cosi) + (etai * cost));
+		float Rp = ((etai * cosi) - (etat * cost)) / ((etai * cosi) + (etat * cost));
+		kr = (Rs * Rs + Rp * Rp) / 2;
+	}
+	// As a consequence of the conservation of energy, transmittance is given by:
+	// kt = 1 - kr;
+}
+
 
 CollisionPoint* Scene::getClosestObject(const Ray& ray, std::vector<CollisionPoint*> collisions)
 {
@@ -250,7 +296,8 @@ CollisionPoint* Scene::getClosestObject(const Ray& ray, std::vector<CollisionPoi
 
 Ray Scene::getReflectiveRay(const Ray& ray, const CollisionPoint& hit)
 {
-	return Ray(glm::vec3(std::cos(hit.angle) / hit.normal.x, std::cos(hit.angle) / hit.normal.y, std::cos(hit.angle) / hit.normal.z) + hit.position, hit.position);
+	return Ray(hit.position, hit.hitDir - 2 * glm::dot(hit.hitDir, hit.normal) * hit.normal);
+//	return Ray(glm::vec3(std::cos(hit.angle) / hit.normal.x, std::cos(hit.angle) / hit.normal.y, std::cos(hit.angle) / hit.normal.z) + hit.position, hit.position);
 }
 
 glm::vec3 Scene::getReflectiveVector(const glm::vec3 vec, const glm::vec3 axis)
