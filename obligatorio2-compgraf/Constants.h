@@ -4,6 +4,8 @@ const double ASPECT_RATIO = 16.0 / 9.0;
 const int SCREEN_WIDTH = 400;
 const int SCREEN_HEIGHT = static_cast<int>(SCREEN_WIDTH/ASPECT_RATIO);
 
+const float CORRECTION = 0.0001;
+
 const double VACUUM = 1.0f;
 const double AIR = 1.00029f;
 const double ACETONE = 1.36f;

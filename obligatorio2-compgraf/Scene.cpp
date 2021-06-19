@@ -7,6 +7,7 @@
 #include <pugixml.hpp>
 #include <glm/glm.hpp>
 
+
 #include "Ray.h"
 #include "SceneObject.h"
 #include "Sphere.h"
@@ -33,21 +34,23 @@ void Scene::loadSceneFromFile()
 	testSphere->ambient.rgb = glm::vec3(1, 0, 0);
 	testSphere->specular = Color();
 	testSphere->specular.rgb = glm::vec3(1, 0, 0);
-	testSphere->shininess = 2.f;
-	testSphere->reflectionCoefficient = 2.f;
-	testSphere->transmissionCoefficient = GLASS;
+	testSphere->shininess = .0f;
+	testSphere->alpha = 1.f;
+	testSphere->reflectionCoefficient = 0.0f;
+	testSphere->transmissionCoefficient = 0;
 	objects.push_back(testSphere);
 
 	Sphere* testSphere2 = new Sphere(.5f, glm::vec3(0.0, 1.0, 1.f));
 	testSphere2->diffuse = Color();
-	testSphere2->diffuse.rgb = glm::vec3(0, 0, 0);
+	testSphere2->diffuse.rgb = glm::vec3(0, 0, 1);
 	testSphere2->ambient = Color();
-	testSphere2->ambient.rgb = glm::vec3(0, 0, 0);
+	testSphere2->ambient.rgb = glm::vec3(0, 0, 1);
 	testSphere2->specular = Color();
-	testSphere2->specular.rgb = glm::vec3(0, 0, 0);
-	testSphere2->shininess = 2.f;
-	testSphere2->reflectionCoefficient = 5.f;
-	testSphere2->transmissionCoefficient = WATER;
+	testSphere2->specular.rgb = glm::vec3(0, 0, 1);
+	testSphere2->shininess = .0f;
+	testSphere2->alpha = 0.3f;
+	testSphere2->reflectionCoefficient = 0.0f;
+	testSphere2->transmissionCoefficient = 1.0f;
 
 	objects.push_back(testSphere2);
 
@@ -59,7 +62,8 @@ void Scene::loadSceneFromFile()
 	world->specular = Color();
 	world->specular.rgb = glm::vec3(1, 0, 0);
 	world->shininess = 0.f;
-	world->reflectionCoefficient = 5.f;
+	world->alpha = 1.f;
+	world->reflectionCoefficient = 0.f;
 	world->transmissionCoefficient = 0;
 
 	objects.push_back(world);
@@ -69,8 +73,7 @@ void Scene::loadSceneFromFile()
 	ambientLight = new Light(white, 0.1f);
 	
 	//obtener luz de xml
-	PositionLight* l = new PositionLight(glm::vec3(0, -3
-		, -1), white, 1);
+	PositionLight* l = new PositionLight(glm::vec3(0, -3, 0), white, 1);
 	lights.push_back(l);
 
 	//obtener bk del xml
@@ -81,7 +84,7 @@ void Scene::loadSceneFromFile()
 	//TODO: obtener camara de xml
 	camera = new Camera(glm::vec3(0, 0, 0) , 1.f, 2.f);
 
-	maxDepth = 2;
+	maxDepth = 5;
 }
 
 void Scene::render(SDL_Renderer* renderer) {
@@ -133,17 +136,6 @@ Color Scene::shadow(const CollisionPoint* hit, const Ray& ray, int depth)
 	diffuse.rgb = glm::vec3(0, 0, 0);
 	Color specular;
 	specular.rgb = glm::vec3(0, 0, 0);
-	/*
-	Color transparency;
-	transparency.rgb = glm::vec3(0, 0, 0);
-
-	float ambientK = 0;
-	float diffuseK = 0;
-	float specularK = 0;
-
-	double reflectionCoefficient = 1.0;
-	double transmissionCoefficient = 1.0;
-*/
 	float brightness = 0;
 	for (PositionLight* light : lights) {
 
@@ -162,6 +154,7 @@ Color Scene::shadow(const CollisionPoint* hit, const Ray& ray, int depth)
 					break;
 				}
 			}
+
 			if (!intersects) {
 				float angle = std::asin(glm::dot(hit->normal, rayToLight.getDirection()));
 				if (angle > 0) {
@@ -173,24 +166,15 @@ Color Scene::shadow(const CollisionPoint* hit, const Ray& ray, int depth)
 									std::pow(std::max(0.f, glm::dot(reflected_light, (-hit->hitDir))), hit->object->getShininess()) *
 									light->getIntensity() * 0.3f * 
 									glm::vec3(1,1,1);
-					/*if (hit->object->shininess > 0)
-					{
-						std::cout << "dot " << glm::dot(reflected_light, (-hit->hitDir)) << std::endl;
-						std::cout << "ref coef " << hit->object->getReflectionCoefficient() << std::endl;
-						std::cout << "pow " << std::pow(std::max(0.f, glm::dot(reflected_light, (-hit->hitDir))), hit->object->getShininess()) << std::endl;
-						std::cout << "light " << light->getIntensity() * 0.3f << std::endl;
-						std::cout << "value " << hit->object->getReflectionCoefficient() * std::max(0.f, std::pow(glm::dot(reflected_light, (-hit->hitDir)), hit->object->getShininess())) * light->getIntensity() * 0.3f << std::endl;
-						std::cout << "r " << specular.rgb.r << std::endl;
-					}*/
-				}
+							}
 			}
 		}
 	}
 	Color result;
 	result.rgb = glm::vec3(0, 0, 0);
-	if (depth < maxDepth && hit->object->getReflectionCoefficient() > 0) {
-		float kr;
-		fresnel(hit->hitDir, hit->normal, hit->object->getReflectionCoefficient(), kr);
+	if (depth < maxDepth && (hit->object->getReflectionCoefficient() > 0 || hit->object->getTransmissionCoefficient() > 0)) {
+		float kr = 1;
+		fresnel(ray.getDirection(), hit->normal, hit->object->getTransmissionCoefficient(), kr);
 
 		Color reflectiveColor;
 		if (hit->object->getReflectionCoefficient() > 0) {
@@ -198,74 +182,27 @@ Color Scene::shadow(const CollisionPoint* hit, const Ray& ray, int depth)
 			reflectiveColor = rayTrace(reflectiveRay, depth + 1);
 		}
 
-
 		Color transmissionColor;
+		transmissionColor.rgb = glm::vec3(0, 0, 0);
 		if (hit->object->getTransmissionCoefficient() > 0) {
 			if (kr < 1) {
-			
-				Ray refractionRay = getReflectiveRay(ray, *hit);
+				Ray refractionRay = getTransmissionRay(ray, *hit);
 				transmissionColor = rayTrace(refractionRay, depth + 1);
+
 			}
 		}
 
-		result.rgb = reflectiveColor.rgb * kr + transmissionColor.rgb * (1 - kr);
+		result.rgb = (reflectiveColor.rgb * kr + transmissionColor.rgb * (1 - kr)) * (1 - hit->object->alpha);
 	}
-	//diffuse.rgb = brightness * hit->object->diffuse.rgb;
 
-	result.rgb += hit->object->ambient.rgb * ambientLight->getIntensity() + diffuse.rgb + specular.rgb;
+	result.rgb += (hit->object->ambient.rgb * ambientLight->getIntensity() + diffuse.rgb + specular.rgb) * hit->object->alpha;
 	result.rgb.r = result.rgb.r * (result.rgb.r < 1.f) + (result.rgb.r >= 1);
 	result.rgb.g = result.rgb.g * (result.rgb.g < 1.f) + (result.rgb.g >= 1);
 	result.rgb.b = result.rgb.b * (result.rgb.b < 1.f) + (result.rgb.b >= 1);
 
+	return result;
 	
-	//std::cout << diffuse.rgb.r << "," << diffuse.rgb.g << ", " << diffuse.rgb.g << std::endl;
-	return result;
-			/*
-			if (!intersects) {
-				diffuseK += light->getIntensity() * std::max(0.f, glm::dot(hit->normal, -rayToLight.getDir()));
-
-				//Ver en nuestro caso el valor de n
-				int n = 10;
-				glm::vec3 V = glm::normalize(camera->getPosition() -hit->position);
-				glm::vec3 R = glm::normalize(2 * glm::dot(hit->normal, rayToLight.getDir()) * hit->normal - rayToLight.getDir());
-				
-				specularK += std::max(0.f, (float)pow(glm::dot(V, R), n));
-
-			}
-
-		}
-	}
-	if (depth < maxDepth) {
-		if (hit->object->getReflectionCoefficient() > 0) {
-			Ray reflectiveRay = getReflectiveRay(ray, *hit);
-			Color reflectiveColor = rayTrace(reflectiveRay, depth + 1);
-				
-			specular.rgb += reflectiveColor.rgb * hit->object->getReflectionCoefficient();
-		}
 		
-		if (hit->object->getTransmissionCoefficient() > 0) {
-			//TODO: Ver si necesitamos considerar 2 objetos intersectandose 
-			if (!isTotalInternalReflection(hit->angle, AIR, hit->object->getMedium())) {
-				Ray transmissionRay = getTransmissionRay(ray, *hit);
-				Color transmissionColor = rayTrace(transmissionRay, depth + 1);
-				//TODO: Donde va la transparencia?
-				transparency.rgb += transmissionColor.rgb * hit->object->getReflectionCoefficient();
-			}
-		}
-	}
-
-	float red = ambient.rgb[0] * ambientK / (ambientK + diffuseK + specularK) + diffuse.rgb[0] * diffuseK / (ambientK + diffuseK + specularK) + specular.rgb[0] * specularK / (ambientK + diffuseK + specularK);
-	float green = ambient.rgb[1] * ambientK / (ambientK + diffuseK + specularK) + diffuse.rgb[1] * diffuseK / (ambientK + diffuseK + specularK) + specular.rgb[1] * specularK / (ambientK + diffuseK + specularK);
-	float blue = ambient.rgb[2] * ambientK / (ambientK + diffuseK + specularK) + diffuse.rgb[2] * diffuseK / (ambientK + diffuseK + specularK) + specular.rgb[2] * specularK / (ambientK + diffuseK + specularK);
-
-
-	Color result;
-	//result.rgb = glm::vec3(red, green, blue);
-	result.rgb = glm::vec3(0, 0, 0);
-	result.reflection = hit->object->getReflectionCoefficient();
-	result.transmission = hit->object->getTransmissionCoefficient();
-	return result;
-	*/
 
 }
 
@@ -327,11 +264,12 @@ Ray Scene::getTransmissionRay(const Ray& ray, const CollisionPoint& hit)
 	float k = 1 - eta * eta * (1 - cosi * cosi);
 	glm::vec3 refractionDirection = k < 0 ? glm::vec3(0, 0, 0) : eta * hit.hitDir + (eta * cosi - sqrtf(k)) * n;
 
-//	bool outside = glm::dot(hit.hitDir, hit.normal) < 0;
+	bool outside = glm::dot(hit.hitDir, hit.normal) < 0;
+	glm::vec3 bias = 0.1f * hit.normal;
 
-	//glm::vec3 refractionRayOrig = outside ? hitPoint - bias : hitPoint + bias;
+	glm::vec3 refractionRayOrig = outside ? hit.position - bias : hit.position + bias;
 
-	return Ray(hit.position, refractionDirection);
+	return Ray(refractionRayOrig, refractionDirection);
 }
 
 bool Scene::isTotalInternalReflection(double incidenceAngle, double outMediumCoefficient, double inMediumCoefficient)

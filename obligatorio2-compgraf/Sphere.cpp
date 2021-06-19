@@ -1,8 +1,8 @@
 #include "Sphere.h"
 #include "Ray.h"
 #include <iostream>
+#include "Constants.h"
 
-const float correction = 0.0001;
 
 CollisionPoint* Sphere::intersects(const Ray& ray)
 {
@@ -30,7 +30,7 @@ CollisionPoint* Sphere::intersects(const Ray& ray)
 
         closestPoint->position = ray.getOrigin() + ray.getDirection() * (float)t0 ;
         closestPoint->normal = glm::normalize(closestPoint->position - position);
-        closestPoint->position = closestPoint->position + closestPoint->normal * correction;
+        closestPoint->position = closestPoint->position + closestPoint->normal * CORRECTION;
         closestPoint->hitDir = ray.getDirection();
         closestPoint->angle = std::asin(glm::dot(ray.getDirection(), closestPoint->normal));
         closestPoint->object = this;

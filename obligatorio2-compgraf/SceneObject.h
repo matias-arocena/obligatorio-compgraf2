@@ -27,6 +27,7 @@ public:
 	float reflectionCoefficient;
 	float transmissionCoefficient;
 	float shininess;
+	float alpha;
 
 	bool solveQuadratic(const double& a, const double& b, const double& c, double& x0, double& x1);
 	virtual CollisionPoint* intersects(const Ray& ray);
