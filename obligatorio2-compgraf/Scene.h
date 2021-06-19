@@ -34,6 +34,7 @@ private:
 	
 	CollisionPoint* getClosestObject(const Ray& ray, std::vector<CollisionPoint*> collisions);
 	Ray getReflectiveRay(const Ray& ray, const CollisionPoint& hit);
+	glm::vec3 getReflectiveVector(const glm::vec3 vec, const glm::vec3 axis);
 	Ray getTransmissionRay(const Ray& ray, const CollisionPoint&hit);
 	bool isTotalInternalReflection(double incidenceAngle, double outMediumCoefficient, double inMediumCoefficient);
 };

@@ -19,16 +19,19 @@ class SceneObject
 {
 protected:
 	glm::vec3 position;
-	float reflectionCoefficient;
-	float transmissionCoefficient;
+	
 public:
 	Color ambient;
 	Color specular;
 	Color diffuse;
+	float reflectionCoefficient;
+	float transmissionCoefficient;
+	float shininess;
 
 	bool solveQuadratic(const double& a, const double& b, const double& c, double& x0, double& x1);
 	virtual CollisionPoint* intersects(const Ray& ray);
 	float getReflectionCoefficient();
+	float getShininess();
 	float getTransmissionCoefficient();
 	float getMedium();
 };

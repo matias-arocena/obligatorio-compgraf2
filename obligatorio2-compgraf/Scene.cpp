@@ -31,6 +31,10 @@ void Scene::loadSceneFromFile()
 	testSphere->diffuse.rgb = glm::vec3(1, 0, 0);
 	testSphere->ambient = Color();
 	testSphere->ambient.rgb = glm::vec3(1, 0, 0);
+	testSphere->specular = Color();
+	testSphere->specular.rgb = glm::vec3(1, 0, 0);
+	testSphere->shininess = 2.f;
+	testSphere->reflectionCoefficient = 2.f;
 
 
 	objects.push_back(testSphere);
@@ -40,6 +44,10 @@ void Scene::loadSceneFromFile()
 	world->diffuse.rgb = glm::vec3(0, 1, 0);
 	world->ambient = Color();
 	world->ambient.rgb = glm::vec3(0, 1, 0);
+	world->specular = Color();
+	world->specular.rgb = glm::vec3(1, 0, 0);
+	world->shininess = 0;
+	world->reflectionCoefficient = 0;
 
 	objects.push_back(world);
 
@@ -110,9 +118,9 @@ Color Scene::shadow(const CollisionPoint* hit, const Ray& ray, int depth)
 {
 	Color diffuse;
 	diffuse.rgb = glm::vec3(0, 0, 0);
-	/*
 	Color specular;
-	specular.rgb = hit->object->specular.rgb;
+	specular.rgb = glm::vec3(0, 0, 0);
+	/*
 	Color transparency;
 	transparency.rgb = glm::vec3(0, 0, 0);
 
@@ -123,11 +131,11 @@ Color Scene::shadow(const CollisionPoint* hit, const Ray& ray, int depth)
 	double reflectionCoefficient = 1.0;
 	double transmissionCoefficient = 1.0;
 */
+	float brightness = 0;
 	for (PositionLight* light : lights) {
 
 
 		Ray rayToLight(hit->position, light->getPosition() - hit->position);
-
 
 		if (glm::dot(hit->normal, rayToLight.getDirection()) > 0) {
 			bool intersects = false;
@@ -145,20 +153,37 @@ Color Scene::shadow(const CollisionPoint* hit, const Ray& ray, int depth)
 				float angle = std::asin(glm::dot(hit->normal, rayToLight.getDirection()));
 				if (angle > 0) {
 					diffuse.rgb += angle * light->getIntensity() * hit->object->diffuse.rgb;
+					/*if (hit->object->getReflectionCoefficient() == 0) brightness += angle * light->getIntensity(); //TODO: diffuse coef?*/
+
+					glm::vec3 reflected_light = glm::normalize(getReflectiveVector(rayToLight.getDirection(), hit->normal));
+					specular.rgb +=  hit->object->getReflectionCoefficient() * 
+									std::pow(std::max(0.f, glm::dot(reflected_light, (-hit->hitDir))), hit->object->getShininess()) *
+									light->getIntensity() * 0.3f * 
+									glm::vec3(1,1,1);
+					/*if (hit->object->shininess > 0)
+					{
+						std::cout << "dot " << glm::dot(reflected_light, (-hit->hitDir)) << std::endl;
+						std::cout << "ref coef " << hit->object->getReflectionCoefficient() << std::endl;
+						std::cout << "pow " << std::pow(std::max(0.f, glm::dot(reflected_light, (-hit->hitDir))), hit->object->getShininess()) << std::endl;
+						std::cout << "light " << light->getIntensity() * 0.3f << std::endl;
+						std::cout << "value " << hit->object->getReflectionCoefficient() * std::max(0.f, std::pow(glm::dot(reflected_light, (-hit->hitDir)), hit->object->getShininess())) * light->getIntensity() * 0.3f << std::endl;
+						std::cout << "r " << specular.rgb.r << std::endl;
+					}*/
 				}
 			}
 		}
 	}
 	Color result;
 
+	//diffuse.rgb = brightness * hit->object->diffuse.rgb;
 
-	result.rgb = hit->object->ambient.rgb * ambientLight->getIntensity() + diffuse.rgb;
+	result.rgb = hit->object->ambient.rgb * ambientLight->getIntensity() + diffuse.rgb + specular.rgb;
 	result.rgb.r = result.rgb.r * (result.rgb.r < 1.f) + (result.rgb.r >= 1);
 	result.rgb.g = result.rgb.g * (result.rgb.g < 1.f) + (result.rgb.g >= 1);
 	result.rgb.b = result.rgb.b * (result.rgb.b < 1.f) + (result.rgb.b >= 1);
 
 	
-	std::cout << diffuse.rgb.r << "," << diffuse.rgb.g << ", " << diffuse.rgb.g << std::endl;
+	//std::cout << diffuse.rgb.r << "," << diffuse.rgb.g << ", " << diffuse.rgb.g << std::endl;
 	return result;
 			/*
 			if (!intersects) {
@@ -226,6 +251,11 @@ CollisionPoint* Scene::getClosestObject(const Ray& ray, std::vector<CollisionPoi
 Ray Scene::getReflectiveRay(const Ray& ray, const CollisionPoint& hit)
 {
 	return Ray(glm::vec3(std::cos(hit.angle) / hit.normal.x, std::cos(hit.angle) / hit.normal.y, std::cos(hit.angle) / hit.normal.z) + hit.position, hit.position);
+}
+
+glm::vec3 Scene::getReflectiveVector(const glm::vec3 vec, const glm::vec3 axis)
+{
+	return 2 * (glm::dot(vec, axis)) * axis - vec;
 }
 
 // TODO

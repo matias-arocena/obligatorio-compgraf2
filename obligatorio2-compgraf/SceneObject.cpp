@@ -11,6 +11,11 @@ float SceneObject::getReflectionCoefficient()
     return reflectionCoefficient;
 }
 
+float SceneObject::getShininess()
+{
+    return shininess;
+}
+
 float SceneObject::getTransmissionCoefficient()
 {
     return transmissionCoefficient;
