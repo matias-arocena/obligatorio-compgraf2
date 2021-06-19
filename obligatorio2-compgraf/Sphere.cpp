@@ -2,6 +2,8 @@
 #include "Ray.h"
 #include <iostream>
 
+const float correction = 0.0001;
+
 CollisionPoint* Sphere::intersects(const Ray& ray)
 {
     double t0, t1; // solutions for t if the ray intersects 
@@ -26,8 +28,9 @@ CollisionPoint* Sphere::intersects(const Ray& ray)
         
         CollisionPoint* closestPoint = new CollisionPoint();
 
-        closestPoint->position = ray.getOrigin() + ray.getDirection() * (float)t0;
+        closestPoint->position = ray.getOrigin() + ray.getDirection() * (float)t0 ;
         closestPoint->normal = glm::normalize(closestPoint->position - position);
+        closestPoint->position = closestPoint->position + closestPoint->normal * correction;
         closestPoint->hitDir = ray.getDirection();
         closestPoint->angle = std::asin(glm::dot(ray.getDirection(), closestPoint->normal));
         closestPoint->object = this;

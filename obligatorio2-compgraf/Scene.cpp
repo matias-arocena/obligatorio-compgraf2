@@ -29,21 +29,28 @@ void Scene::loadSceneFromFile()
 	std::cout << projectionCenter.x << "," << projectionCenter.y << "," << projectionCenter.z << std::endl;
 
 	Sphere* testSphere = new Sphere(.5f, glm::vec3(0.0, 0.0, 1.f));
-	testSphere->color = Color();
-	testSphere->color.rgb = glm::vec3(255, 0, 255);
+	testSphere->diffuse = Color();
+	testSphere->diffuse.rgb = glm::vec3(1, 0, 0);
+	testSphere->ambient = Color();
+	testSphere->ambient.rgb = glm::vec3(1, 0, 0);
+
+
 	objects.push_back(testSphere);
 
 	Sphere* world = new Sphere(105.f, glm::vec3(0.0, 110.0, 1.f));
-	world->color = Color();
-	world->color.rgb = glm::vec3(0, 255, 0);
+	world->diffuse = Color();
+	world->diffuse.rgb = glm::vec3(0, 1, 0);
+	world->ambient = Color();
+	world->ambient.rgb = glm::vec3(0, 1, 0);
+
 	objects.push_back(world);
 
 	Color white;
-	white.rgb = glm::vec3(255, 255, 255);
+	white.rgb = glm::vec3(1, 1, 1);
 	ambientLight = new Light(white, 0.3f);
 	
 	//obtener luz de xml
-	PositionLight* l = new PositionLight(glm::vec3(1,-2,-0.5), white, 1);
+	PositionLight* l = new PositionLight(glm::vec3(2, -1, -1), white, 1);
 	lights.push_back(l);
 
 	//obtener bk del xml
@@ -58,8 +65,6 @@ void Scene::loadSceneFromFile()
 }
 
 void Scene::render(SDL_Renderer* renderer) {
-	double auxX;
-	double auxU;
 	for (int y = 0; y < SCREEN_HEIGHT; ++y) {
 		double v = (double)y / SCREEN_HEIGHT;
 		for (int x = 0; x < SCREEN_WIDTH; ++x) {
@@ -70,16 +75,11 @@ void Scene::render(SDL_Renderer* renderer) {
 				camera->getPosition(),
 				camera->getDirectionToViewport(u, v)
 			);
-			if (x == SCREEN_WIDTH / 2 && y == SCREEN_HEIGHT / 2) {
-				Ray ray(
-					camera->getPosition(),
-					camera->getDirectionToViewport(u, v)
-				);
-			}
+
 			Color pixel(rayTrace(ray, 1));
 
 			// std::cout << "(" << x << "," << y << ") (" << u << "," << v << ") (" << pixel.rgb.r << "," << pixel.rgb.g << "," << pixel.rgb.b << ")" << std::endl;
-			SDL_SetRenderDrawColor(renderer, pixel.rgb.r, pixel.rgb.g, pixel.rgb.b, SDL_ALPHA_OPAQUE);
+			SDL_SetRenderDrawColor(renderer, 255 * pixel.rgb.r, 255 * pixel.rgb.g, 255 * pixel.rgb.b, SDL_ALPHA_OPAQUE);
 			SDL_RenderDrawPoint(renderer, x, y);
 		}
 	}
@@ -125,7 +125,10 @@ Color Scene::shadow(const CollisionPoint* hit, const Ray& ray, int depth)
 	double transmissionCoefficient = 1.0;
 */
 	for (PositionLight* light : lights) {
+
+
 		Ray rayToLight(hit->position, light->getPosition() - hit->position);
+
 
 		if (glm::dot(hit->normal, rayToLight.getDirection()) > 0) {
 			bool intersects = false;
@@ -140,19 +143,23 @@ Color Scene::shadow(const CollisionPoint* hit, const Ray& ray, int depth)
 				}
 			}
 			if (!intersects) {
-
-				diffuse.rgb += hit->object->color.rgb;
-
+				float angle = std::asin(glm::dot(hit->normal, rayToLight.getDirection()));
+				if (angle > 0) {
+					diffuse.rgb += angle * light->getIntensity() * hit->object->diffuse.rgb;
+				}
 			}
 		}
 	}
 	Color result;
 
-	result.rgb = (hit->object->color.rgb * ambientLight->getIntensity())  + diffuse.rgb;
-	result.rgb.r = (result.rgb.r * (result.rgb.r >= 0) * (result.rgb.r < 256)) + 255 * (result.rgb.r > 255);
-	result.rgb.g = (result.rgb.g * (result.rgb.g >= 0) * (result.rgb.g < 256)) + 255 * (result.rgb.g > 255);
-	result.rgb.b = (result.rgb.b * (result.rgb.b >= 0) * (result.rgb.b < 256)) + 255 * (result.rgb.b > 255);
 
+	result.rgb = hit->object->ambient.rgb * ambientLight->getIntensity() + diffuse.rgb;
+	result.rgb.r = result.rgb.r * (result.rgb.r < 1.f) + (result.rgb.r >= 1);
+	result.rgb.g = result.rgb.g * (result.rgb.g < 1.f) + (result.rgb.g >= 1);
+	result.rgb.b = result.rgb.b * (result.rgb.b < 1.f) + (result.rgb.b >= 1);
+
+	
+	std::cout << diffuse.rgb.r << "," << diffuse.rgb.g << ", " << diffuse.rgb.g << std::endl;
 	return result;
 			/*
 			if (!intersects) {
