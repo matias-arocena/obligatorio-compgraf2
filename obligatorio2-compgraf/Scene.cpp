@@ -26,9 +26,7 @@ void Scene::loadSceneFromFile()
 		doc.child("projectionCenter").attribute("z").as_int()
 	);
 
-	std::cout << projectionCenter.x << "," << projectionCenter.y << "," << projectionCenter.z << std::endl;
-
-	Sphere* testSphere = new Sphere(.5f, glm::vec3(0.0, 0.0, 1.f));
+	Sphere* testSphere = new Sphere(.5f, glm::vec3(0.0, 1.0, 2.f));
 	testSphere->diffuse = Color();
 	testSphere->diffuse.rgb = glm::vec3(1, 0, 0);
 	testSphere->ambient = Color();
@@ -37,7 +35,7 @@ void Scene::loadSceneFromFile()
 
 	objects.push_back(testSphere);
 
-	Sphere* world = new Sphere(105.f, glm::vec3(0.0, 110.0, 1.f));
+	Sphere* world = new Sphere(105.f, glm::vec3(0.0, 110.0, 2.f));
 	world->diffuse = Color();
 	world->diffuse.rgb = glm::vec3(0, 1, 0);
 	world->ambient = Color();
@@ -47,10 +45,11 @@ void Scene::loadSceneFromFile()
 
 	Color white;
 	white.rgb = glm::vec3(1, 1, 1);
-	ambientLight = new Light(white, 0.3f);
+	ambientLight = new Light(white, 0.1f);
 	
 	//obtener luz de xml
-	PositionLight* l = new PositionLight(glm::vec3(2, -1, -1), white, 1);
+	PositionLight* l = new PositionLight(glm::vec3(0, -3
+		, -1), white, 1);
 	lights.push_back(l);
 
 	//obtener bk del xml
