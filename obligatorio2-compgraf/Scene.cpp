@@ -27,20 +27,32 @@ void Scene::loadSceneFromFile()
 		doc.child("projectionCenter").attribute("z").as_int()
 	);
 
-	Sphere* testSphere = new Sphere(.5f, glm::vec3(0.0, 1.0, 2.f));
+	Sphere* testSphere = new Sphere(.49f, glm::vec3(0.0, 1.0, 2.1f));
 	testSphere->diffuse = Color();
 	testSphere->diffuse.rgb = glm::vec3(1, 0, 0);
 	testSphere->ambient = Color();
 	testSphere->ambient.rgb = glm::vec3(1, 0, 0);
 	testSphere->specular = Color();
 	testSphere->specular.rgb = glm::vec3(1, 0, 0);
-	testSphere->shininess = .0f;
-	testSphere->alpha = .0f;
-	testSphere->reflectionCoefficient = 0.0f;
-	testSphere->transmissionCoefficient = GLASS;
+	testSphere->shininess = .3;
+	testSphere->alpha = 1.0;
+	testSphere->reflectionCoefficient = 1.0f;
+	testSphere->transmissionCoefficient = 0;
 	objects.push_back(testSphere);
-	
-	
+
+	Sphere* testSphere2 = new Sphere(.5f, glm::vec3(0.0, 1.f, 1.f));
+	testSphere2->diffuse = Color();
+	testSphere2->diffuse.rgb = glm::vec3(1, 1, 1);
+	testSphere2->ambient = Color();
+	testSphere2->ambient.rgb = glm::vec3(1, 1, 1);
+	testSphere2->specular = Color();
+	testSphere2->specular.rgb = glm::vec3(1, 1, 1);
+	testSphere2->shininess = .0f;
+	testSphere2->alpha = 0.4f;
+	testSphere2->reflectionCoefficient = 0.0f;
+	testSphere2->transmissionCoefficient = WATER;
+
+	objects.push_back(testSphere2);
 
 	Sphere* world = new Sphere(105.f, glm::vec3(0.0, 110.0, 1.f));
 	world->diffuse = Color();
@@ -77,9 +89,9 @@ void Scene::loadSceneFromFile()
 
 void Scene::render(SDL_Renderer* renderer) {
 	for (int y = 0; y < SCREEN_HEIGHT; ++y) {
-		double v = (double)y / SCREEN_HEIGHT;
+		double v = (float)y / SCREEN_HEIGHT;
 		for (int x = 0; x < SCREEN_WIDTH; ++x) {
-			double u = (double)x / SCREEN_WIDTH;
+			double u = (float)x / SCREEN_WIDTH;
 
 
 			Ray ray(
@@ -128,29 +140,47 @@ Color Scene::shadow(const CollisionPoint* hit, const Ray& ray, int depth)
 	float brightness = 0;
 	for (PositionLight* light : lights) {
 		Ray rayToLight(hit->position, light->getPosition() - hit->position, ray.getMedium());
+		double modifiedIntensity = light->getIntensity();
 
 		if (glm::dot(hit->normal, rayToLight.getDirection()) > 0) {
-			bool intersects = false;
-			for (auto& obj : objects) {
+			bool in_shade = false;
+			bool test = false;
+			for (auto& obj : objects) 
+			{
 				CollisionPoint* otherHit = obj->intersects(rayToLight);
-				if (otherHit != nullptr && otherHit->distanceFromOrigin < glm::length(light->getPosition() - otherHit->position)) {
-					if (otherHit->object != hit->object) {
-						intersects = true;
+				if (otherHit != nullptr && otherHit->distanceFromOrigin < glm::length(light->getPosition() - otherHit->position)) 
+				{
+					std::cout << "hit " << hit->position.x << " " << hit->position.y << " " << hit->position.z << std::endl;
+
+					if (otherHit->object != hit->object &&
+						otherHit->object->alpha == 1.f)
+					{
+						std::cout << "object b " << otherHit->object->diffuse.rgb.b << std::endl;
+						in_shade = true;
+						break;
 					}
-					intersects = true;
-					break;
+					else
+					{
+						std::cout << "modified intensity " << std::endl;
+						modifiedIntensity *= 1 - otherHit->object->alpha;
+						test = true;
+					}
 				}
 			}
 
-			if (!intersects) {
+			if (!in_shade) {
 				double angle = std::asin(glm::dot(hit->normal, rayToLight.getDirection()));
-				if (angle > 0) {
-					diffuse.rgb += angle * light->getIntensity() * hit->object->diffuse.rgb;
+				if (angle > 0)
+				{
+					if (test)
+						std::cout << "intensity: " << modifiedIntensity << std::endl;
+					diffuse.rgb += angle * modifiedIntensity * hit->object->diffuse.rgb;
+					/*if (hit->object->getReflectionCoefficient() == 0) brightness += angle * modifiedIntensity; //TODO: diffuse coef?*/
 
 					glm::dvec3 reflected_light = glm::normalize(getReflectiveVector(rayToLight.getDirection(), hit->normal));
 					specular.rgb +=  hit->object->getReflectionCoefficient() * 
 									std::pow(std::max(0.0, glm::dot(reflected_light, (-hit->hitDir))), hit->object->getShininess()) *
-									light->getIntensity() * 0.3 * 
+									modifiedIntensity * 0.3 * 
 									glm::dvec3(1,1,1);
 				}
 			}
@@ -158,12 +188,13 @@ Color Scene::shadow(const CollisionPoint* hit, const Ray& ray, int depth)
 	}
 	Color result;
 	result.rgb = glm::dvec3(0, 0, 0);
-	if (depth < maxDepth && (hit->object->getReflectionCoefficient() > 0 || hit->object->getTransmissionCoefficient() > 0)) {
+	if (depth < maxDepth && hit->object->alpha < 1 && (hit->object->getReflectionCoefficient() > 0 || hit->object->getTransmissionCoefficient() > 0)) {
 		double kr = fresnel(ray.getDirection(), hit->normal, ray.getMedium(), hit->object->getTransmissionCoefficient());
 
 		Color reflectiveColor;
 		reflectiveColor.rgb = glm::dvec3(0, 0, 0);
 		if (hit->object->getReflectionCoefficient() > 0) {
+			std::cout << "reflecting" << std::endl;
 			Ray reflectiveRay = getReflectiveRay(ray, *hit);
 			reflectiveColor = rayTrace(reflectiveRay, depth + 1);
 		}
@@ -172,6 +203,7 @@ Color Scene::shadow(const CollisionPoint* hit, const Ray& ray, int depth)
 		transmissionColor.rgb = glm::dvec3(0, 0, 0);
 		if (hit->object->getTransmissionCoefficient() > 0) {
 			if (kr < 1) {
+				//std::cout << "refracting" << std::endl;
 				Ray refractionRay = getTransmissionRay(ray, *hit);
 				transmissionColor = rayTrace(refractionRay, depth + 1);
 				bool DEBUG = transmissionColor.rgb.r < 0.3 && transmissionColor.rgb.g < 0.3 && transmissionColor.rgb.b < 0.3;
