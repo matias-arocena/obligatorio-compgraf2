@@ -8,18 +8,16 @@
 #include <SDL.h>
 #include <iostream>
 
-void ImageGenerator::generateImage(SDL_Renderer* renderer, std::string imageName, int width, int height) {
-    SDL_Surface* sceneRendering = SDL_CreateRGBSurface(0, width, height, 32, RED_MASK, GREEN_MASK, BLUE_MASK, ALPHA_MASK);
-    SDL_RenderReadPixels(renderer, NULL, SDL_PIXELFORMAT_ARGB8888, sceneRendering->pixels, sceneRendering->pitch);
+void ImageGenerator::generateImage(SDL_Surface* surface, std::string imageName, int width, int height) {
     
     std::string dirName = generateName();
     std::filesystem::create_directory(dirName);
     
     std::string name = dirName + "/" + imageName + ".png";
 
-    saveImage(sceneRendering, name.c_str());
+    saveImage(surface, name.c_str());
 
-    SDL_FreeSurface(sceneRendering);
+    SDL_FreeSurface(surface);
 }
 
 std::string ImageGenerator::generateName()

@@ -19,15 +19,25 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    SDL_Window *window = SDL_CreateWindow("Iluminacion Global", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
-    SDL_Renderer *renderer = SDL_CreateRenderer(window, 0, 0);
+    //SDL_Window *window = SDL_CreateWindow("Iluminacion Global", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+
+    SDL_Surface* mainSurface = SDL_CreateRGBSurface(0, SCREEN_WIDTH, SCREEN_HEIGHT, 32, 0, 0, 0, 0);
+    SDL_Renderer *renderer = SDL_CreateSoftwareRenderer(mainSurface);
+
+    SDL_Surface* reflectionSurface = SDL_CreateRGBSurface(0, SCREEN_WIDTH, SCREEN_HEIGHT, 32, 0, 0, 0, 0);
+    SDL_Renderer* reflectionRenderer = SDL_CreateSoftwareRenderer(reflectionSurface);
+
+    SDL_Surface* transmissionSurface = SDL_CreateRGBSurface(0, SCREEN_WIDTH, SCREEN_HEIGHT, 32, 0, 0, 0, 0);
+    SDL_Renderer* transmissionRenderer = SDL_CreateSoftwareRenderer(transmissionSurface);
 
     Scene* scene = new Scene();
     scene->loadSceneFromFile();
 
-    scene->render(renderer);
+    scene->render(renderer, reflectionRenderer, transmissionRenderer);
 
-    ImageGenerator::generateImage(renderer, "final", SCREEN_WIDTH, SCREEN_HEIGHT);
+    ImageGenerator::generateImage(mainSurface, "final", SCREEN_WIDTH, SCREEN_HEIGHT);
+    ImageGenerator::generateImage(reflectionSurface, "reflection", SCREEN_WIDTH, SCREEN_HEIGHT);
+    ImageGenerator::generateImage(transmissionSurface, "transmission", SCREEN_WIDTH, SCREEN_HEIGHT);
     
     IMG_Quit();
     SDL_Quit();

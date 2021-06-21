@@ -19,7 +19,7 @@ class Scene
 public:
 	Scene();
 	void loadSceneFromFile();
-	void render(SDL_Renderer* renderer);
+	void render(SDL_Renderer* renderer, SDL_Renderer* reflectionRenderer, SDL_Renderer* transmissionRenderer);
 private:
 	int maxDepth;
 	glm::vec3 projectionCenter;
