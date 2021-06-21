@@ -35,32 +35,20 @@ void Scene::loadSceneFromFile()
 	testSphere->specular = Color();
 	testSphere->specular.rgb = glm::vec3(1, 0, 0);
 	testSphere->shininess = .0f;
-	testSphere->alpha = 1.f;
+	testSphere->alpha = .0f;
 	testSphere->reflectionCoefficient = 0.0f;
-	testSphere->transmissionCoefficient = 0;
+	testSphere->transmissionCoefficient = GLASS;
 	objects.push_back(testSphere);
+	
+	
 
-	Sphere* testSphere2 = new Sphere(.5f, glm::vec3(0.0, 1.0, 1.f));
-	testSphere2->diffuse = Color();
-	testSphere2->diffuse.rgb = glm::vec3(0, 0, 1);
-	testSphere2->ambient = Color();
-	testSphere2->ambient.rgb = glm::vec3(0, 0, 1);
-	testSphere2->specular = Color();
-	testSphere2->specular.rgb = glm::vec3(0, 0, 1);
-	testSphere2->shininess = .0f;
-	testSphere2->alpha = 0.3f;
-	testSphere2->reflectionCoefficient = 0.0f;
-	testSphere2->transmissionCoefficient = 1.0f;
-
-	objects.push_back(testSphere2);
-
-	Sphere* world = new Sphere(105.f, glm::vec3(0.0, 110.0, 2.f));
+	Sphere* world = new Sphere(105.f, glm::vec3(0.0, 110.0, 1.f));
 	world->diffuse = Color();
 	world->diffuse.rgb = glm::vec3(0, 1, 0);
 	world->ambient = Color();
 	world->ambient.rgb = glm::vec3(0, 1, 0);
 	world->specular = Color();
-	world->specular.rgb = glm::vec3(1, 0, 0);
+	world->specular.rgb = glm::vec3(0, 1, 0);
 	world->shininess = 0.f;
 	world->alpha = 1.f;
 	world->reflectionCoefficient = 0.f;
@@ -69,22 +57,22 @@ void Scene::loadSceneFromFile()
 	objects.push_back(world);
 
 	Color white;
-	white.rgb = glm::vec3(1, 1, 1);
-	ambientLight = new Light(white, 0.1f);
+	white.rgb = glm::dvec3(1, 1, 1);
+	ambientLight = new Light(white, .3f);
 	
 	//obtener luz de xml
-	PositionLight* l = new PositionLight(glm::vec3(0, -3, 0), white, 1);
-	lights.push_back(l);
-
+	PositionLight* l1 = new PositionLight(glm::vec3(2, -1, -1), white, 1);
+	lights.push_back(l1);
+	
 	//obtener bk del xml
-	backgroudColor.rgb = glm::vec3(0, 0, 0);
+	backgroudColor.rgb = glm::vec3(0.8,0.8, 1);
 	backgroudColor.reflection = 0;
 	backgroudColor.transmission = 0;
 
 	//TODO: obtener camara de xml
 	camera = new Camera(glm::vec3(0, 0, 0) , 1.f, 2.f);
 
-	maxDepth = 5;
+	maxDepth = 10;
 }
 
 void Scene::render(SDL_Renderer* renderer) {
@@ -96,13 +84,15 @@ void Scene::render(SDL_Renderer* renderer) {
 
 			Ray ray(
 				camera->getPosition(),
-				camera->getDirectionToViewport(u, v)
+				camera->getDirectionToViewport(u, v),
+				VACUUM
 			);
 
 			Color pixel(rayTrace(ray, 1));
 
-			// std::cout << "(" << x << "," << y << ") (" << u << "," << v << ") (" << pixel.rgb.r << "," << pixel.rgb.g << "," << pixel.rgb.b << ")" << std::endl;
-			SDL_SetRenderDrawColor(renderer, 255 * pixel.rgb.r, 255 * pixel.rgb.g, 255 * pixel.rgb.b, SDL_ALPHA_OPAQUE);
+
+
+			SDL_SetRenderDrawColor(renderer, static_cast<Uint8>(255 * pixel.rgb.r), static_cast<Uint8>(255 * pixel.rgb.g), static_cast<Uint8>(255 * pixel.rgb.b), SDL_ALPHA_OPAQUE);
 			SDL_RenderDrawPoint(renderer, x, y);
 		}
 	}
@@ -122,8 +112,7 @@ Color Scene::rayTrace(const Ray& ray, int depth)
 		return shadow(collisionPoint, ray, depth);
 	}
 	else {
-
-		glm::vec3 rgb = backgroudColor.rgb;
+		glm::dvec3 rgb = backgroudColor.rgb;
 		Color color;
 		color.rgb = rgb;
 		return color;
@@ -131,16 +120,14 @@ Color Scene::rayTrace(const Ray& ray, int depth)
 }
 
 Color Scene::shadow(const CollisionPoint* hit, const Ray& ray, int depth)
-{
+{   
 	Color diffuse;
-	diffuse.rgb = glm::vec3(0, 0, 0);
+	diffuse.rgb = glm::dvec3(0, 0, 0);
 	Color specular;
-	specular.rgb = glm::vec3(0, 0, 0);
+	specular.rgb = glm::dvec3(0, 0, 0);
 	float brightness = 0;
 	for (PositionLight* light : lights) {
-
-
-		Ray rayToLight(hit->position, light->getPosition() - hit->position);
+		Ray rayToLight(hit->position, light->getPosition() - hit->position, ray.getMedium());
 
 		if (glm::dot(hit->normal, rayToLight.getDirection()) > 0) {
 			bool intersects = false;
@@ -156,39 +143,41 @@ Color Scene::shadow(const CollisionPoint* hit, const Ray& ray, int depth)
 			}
 
 			if (!intersects) {
-				float angle = std::asin(glm::dot(hit->normal, rayToLight.getDirection()));
+				double angle = std::asin(glm::dot(hit->normal, rayToLight.getDirection()));
 				if (angle > 0) {
 					diffuse.rgb += angle * light->getIntensity() * hit->object->diffuse.rgb;
-					/*if (hit->object->getReflectionCoefficient() == 0) brightness += angle * light->getIntensity(); //TODO: diffuse coef?*/
 
-					glm::vec3 reflected_light = glm::normalize(getReflectiveVector(rayToLight.getDirection(), hit->normal));
+					glm::dvec3 reflected_light = glm::normalize(getReflectiveVector(rayToLight.getDirection(), hit->normal));
 					specular.rgb +=  hit->object->getReflectionCoefficient() * 
-									std::pow(std::max(0.f, glm::dot(reflected_light, (-hit->hitDir))), hit->object->getShininess()) *
-									light->getIntensity() * 0.3f * 
-									glm::vec3(1,1,1);
-							}
+									std::pow(std::max(0.0, glm::dot(reflected_light, (-hit->hitDir))), hit->object->getShininess()) *
+									light->getIntensity() * 0.3 * 
+									glm::dvec3(1,1,1);
+				}
 			}
 		}
 	}
 	Color result;
-	result.rgb = glm::vec3(0, 0, 0);
+	result.rgb = glm::dvec3(0, 0, 0);
 	if (depth < maxDepth && (hit->object->getReflectionCoefficient() > 0 || hit->object->getTransmissionCoefficient() > 0)) {
-		float kr = 1;
-		fresnel(ray.getDirection(), hit->normal, hit->object->getTransmissionCoefficient(), kr);
+		double kr = fresnel(ray.getDirection(), hit->normal, ray.getMedium(), hit->object->getTransmissionCoefficient());
 
 		Color reflectiveColor;
+		reflectiveColor.rgb = glm::dvec3(0, 0, 0);
 		if (hit->object->getReflectionCoefficient() > 0) {
 			Ray reflectiveRay = getReflectiveRay(ray, *hit);
 			reflectiveColor = rayTrace(reflectiveRay, depth + 1);
 		}
 
 		Color transmissionColor;
-		transmissionColor.rgb = glm::vec3(0, 0, 0);
+		transmissionColor.rgb = glm::dvec3(0, 0, 0);
 		if (hit->object->getTransmissionCoefficient() > 0) {
 			if (kr < 1) {
 				Ray refractionRay = getTransmissionRay(ray, *hit);
 				transmissionColor = rayTrace(refractionRay, depth + 1);
-
+				bool DEBUG = transmissionColor.rgb.r < 0.3 && transmissionColor.rgb.g < 0.3 && transmissionColor.rgb.b < 0.3;
+				if (DEBUG) {
+					transmissionColor = rayTrace(refractionRay, depth + 1);
+				}
 			}
 		}
 
@@ -201,31 +190,29 @@ Color Scene::shadow(const CollisionPoint* hit, const Ray& ray, int depth)
 	result.rgb.b = result.rgb.b * (result.rgb.b < 1.f) + (result.rgb.b >= 1);
 
 	return result;
-	
-		
-
 }
 
-void Scene::fresnel(const glm::vec3& I, const glm::vec3& N, const float& ior, float& kr)
+double Scene::fresnel(const glm::dvec3& direction, const glm::dvec3& normal, const double& inTransmissionCoefficient, const double& outTransmissionCoefficient)
 {
-	float cosi = glm::clamp(-1.f, 1.f, glm::dot(I, N));
-	float etai = 1, etat = ior;
-	if (cosi > 0) { std::swap(etai, etat); }
+	double cosi = glm::clamp(-1.0, 1.0, glm::dot(direction, normal));
+	double etai = inTransmissionCoefficient;
+	double etat = outTransmissionCoefficient;
+	if (cosi > 0) { 
+		std::swap(etai, etat); 
+	}
 	// Compute sini using Snell's law
-	float sint = etai / etat * sqrtf(std::max(0.f, 1 - cosi * cosi));
+	double sint = etai / etat * sqrt(std::max(0.0, 1 - cosi * cosi));
 	// Total internal reflection
 	if (sint >= 1) {
-		kr = 1;
+		return 1.0;
 	}
 	else {
-		float cost = sqrtf(std::max(0.f, 1 - sint * sint));
-		cosi = fabsf(cosi);
-		float Rs = ((etat * cosi) - (etai * cost)) / ((etat * cosi) + (etai * cost));
-		float Rp = ((etai * cosi) - (etat * cost)) / ((etai * cosi) + (etat * cost));
-		kr = (Rs * Rs + Rp * Rp) / 2;
+		double cost = sqrt(std::max(0.0, 1 - sint * sint));
+		cosi = abs(cosi);
+		double Rs = ((etat * cosi) - (etai * cost)) / ((etat * cosi) + (etai * cost));
+		double Rp = ((etai * cosi) - (etat * cost)) / ((etai * cosi) + (etat * cost));
+		return (Rs * Rs + Rp * Rp) / 2;
 	}
-	// As a consequence of the conservation of energy, transmittance is given by:
-	// kt = 1 - kr;
 }
 
 
@@ -244,8 +231,7 @@ CollisionPoint* Scene::getClosestObject(const Ray& ray, std::vector<CollisionPoi
 
 Ray Scene::getReflectiveRay(const Ray& ray, const CollisionPoint& hit)
 {
-	return Ray(hit.position, hit.hitDir - 2 * glm::dot(hit.hitDir, hit.normal) * hit.normal);
-//	return Ray(glm::vec3(std::cos(hit.angle) / hit.normal.x, std::cos(hit.angle) / hit.normal.y, std::cos(hit.angle) / hit.normal.z) + hit.position, hit.position);
+	return Ray(hit.position, hit.hitDir - 2 * glm::dot(hit.hitDir, hit.normal) * hit.normal, ray.getMedium());
 }
 
 glm::vec3 Scene::getReflectiveVector(const glm::vec3 vec, const glm::vec3 axis)
@@ -255,28 +241,28 @@ glm::vec3 Scene::getReflectiveVector(const glm::vec3 vec, const glm::vec3 axis)
 
 Ray Scene::getTransmissionRay(const Ray& ray, const CollisionPoint& hit)
 {
-	float cosi = glm::clamp(-1.f, 1.f, glm::dot(hit.hitDir, hit.normal));
-	float etai = 1, etat = hit.object->getTransmissionCoefficient();
-	glm::vec3 n = hit.normal;
-	if (cosi < 0) { cosi = -cosi; }
-	else { std::swap(etai, etat); n = -hit.normal; }
-	float eta = etai / etat;
-	float k = 1 - eta * eta * (1 - cosi * cosi);
-	glm::vec3 refractionDirection = k < 0 ? glm::vec3(0, 0, 0) : eta * hit.hitDir + (eta * cosi - sqrtf(k)) * n;
-
 	bool outside = glm::dot(hit.hitDir, hit.normal) < 0;
-	glm::vec3 bias = 0.1f * hit.normal;
+	glm::dvec3 bias = 0.01 * hit.normal;
 
-	glm::vec3 refractionRayOrig = outside ? hit.position - bias : hit.position + bias;
+	glm::dvec3 refractionRayOrig = outside ? hit.position - bias : hit.position + bias;
 
-	return Ray(refractionRayOrig, refractionDirection);
-}
+	double cosIncidenceNormal = glm::clamp(-1.0, 1.0, glm::dot(-hit.normal, glm::normalize(hit.hitDir)));
+	double incidenceRefraction = ray.getMedium();
+	double outRefraction = hit.object->getTransmissionCoefficient();
+	
+	glm::dvec3 normal = -hit.normal;
+	if (cosIncidenceNormal < 0) { 
+		cosIncidenceNormal = -cosIncidenceNormal; 
+	}
+	else {
+		//std::swap(incidenceRefraction, outRefraction); 
+		normal = -hit.normal; 
+	}
+	double eta = incidenceRefraction / outRefraction;
+	double k = 1 - eta * eta * (1 - cosIncidenceNormal * cosIncidenceNormal);
+	glm::dvec3 refractionDirection = k < 0 ? glm::dvec3(0, 0, 0) : eta * glm::normalize(hit.hitDir) + (eta * cosIncidenceNormal - sqrt(k)) * normal;
 
-bool Scene::isTotalInternalReflection(double incidenceAngle, double outMediumCoefficient, double inMediumCoefficient)
-{
-	if (outMediumCoefficient < inMediumCoefficient)
-		return false;
-	return incidenceAngle > std::asin(inMediumCoefficient/outMediumCoefficient);
+	return Ray(refractionRayOrig, refractionDirection, hit.object->getMedium());
 }
 
 bool distanceComparator(const CollisionPoint& a, const CollisionPoint& b) {

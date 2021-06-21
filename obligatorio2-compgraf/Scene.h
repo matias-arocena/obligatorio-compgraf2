@@ -32,11 +32,10 @@ private:
 	Color rayTrace(const Ray& ray, int depth);
 	Color shadow(const CollisionPoint *hit, const Ray& ray, int depth);
 	
-	void fresnel(const glm::vec3& I, const glm::vec3& N, const float& ior, float& kr);
+	double fresnel(const glm::dvec3& direction, const glm::dvec3& normal, const double& inTransmissionCoefficient, const double& outTransmissionCoefficient);
 	CollisionPoint* getClosestObject(const Ray& ray, std::vector<CollisionPoint*> collisions);
 	Ray getReflectiveRay(const Ray& ray, const CollisionPoint& hit);
 	glm::vec3 getReflectiveVector(const glm::vec3 vec, const glm::vec3 axis);
-	Ray getTransmissionRay(const Ray& ray, const CollisionPoint&hit);
-	bool isTotalInternalReflection(double incidenceAngle, double outMediumCoefficient, double inMediumCoefficient);
+	Ray getTransmissionRay(const Ray& ray, const CollisionPoint& hit);
 };
 

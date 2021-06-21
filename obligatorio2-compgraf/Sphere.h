@@ -5,9 +5,9 @@ class Sphere :
     public SceneObject
 {
 private:
-    float radius;
+    double radius;
 public:
-    Sphere(float aRadius, glm::vec3 aPos) 
+    Sphere(double aRadius, glm::dvec3 aPos) 
     {
         radius = aRadius;
         position = aPos;

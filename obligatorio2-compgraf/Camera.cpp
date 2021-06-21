@@ -2,14 +2,14 @@
 
 #include "Constants.h"
 
-Camera::Camera(glm::vec3 position, float near, float viewportHeight) : position{ position }, near{ near }, viewportHeight{ viewportHeight }
+Camera::Camera(glm::dvec3 position, double near, double viewportHeight) : position{ position }, near{ near }, viewportHeight{ viewportHeight }
 {
     
     viewportWidth = ASPECT_RATIO * viewportHeight;
-    uAxis = glm::vec3(viewportWidth, 0.f, 0.f);
-    vAxis = glm::vec3(0.f, viewportHeight, 0.f);
+    uAxis = glm::dvec3(viewportWidth, 0.f, 0.f);
+    vAxis = glm::dvec3(0.f, viewportHeight, 0.f);
 
-    viewportCorner = position - uAxis / 2.f - vAxis / 2.f + glm::vec3(0,0, near);
+    viewportCorner = position - uAxis / 2.0 - vAxis / 2.0 + glm::dvec3(0,0, near);
 /*
 	Vector3 t = s.camera.center - s.camera.eye;
 	Vector3 b = s.camera.up.cross(t);
@@ -29,22 +29,22 @@ Camera::Camera(glm::vec3 position, float near, float viewportHeight) : position{
 	*/
 }
 
-glm::vec3 Camera::getPosition()
+glm::dvec3 Camera::getPosition()
 {
     return position;
 }
 
-glm::vec3 Camera::getDirectionToViewport(float u, float v)
+glm::dvec3 Camera::getDirectionToViewport(double u, double v)
 {
     return viewportCorner + u * uAxis + v * vAxis + position;
 }
 
-float Camera::getViewportHeight()
+double Camera::getViewportHeight()
 {
     return viewportHeight;
 }
 
-float Camera::getViewportWidth()
+double Camera::getViewportWidth()
 {
     return viewportWidth;
 }

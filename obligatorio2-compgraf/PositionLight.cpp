@@ -1,10 +1,10 @@
 #include "PositionLight.h"
 
-PositionLight::PositionLight(glm::vec3 position, Color color, float intensity) : position{position}, Light(color, intensity)
+PositionLight::PositionLight(glm::dvec3 position, Color color, float intensity) : position{position}, Light(color, intensity)
 {
 }
 
-glm::vec3 PositionLight::getPosition()
+glm::dvec3 PositionLight::getPosition()
 {
     return position;
 }

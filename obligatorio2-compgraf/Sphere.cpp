@@ -7,16 +7,16 @@
 CollisionPoint* Sphere::intersects(const Ray& ray)
 {
     double t0, t1; // solutions for t if the ray intersects 
-    glm::vec3 L = ray.getOrigin() - position;
-    float a = glm::dot(ray.getDirection(), ray.getDirection());
-    float b = 2 * glm::dot(L, ray.getDirection());
-    float c = glm::dot(L, L) - radius * radius;
+    glm::dvec3 L = ray.getOrigin() - position;
+    double a = glm::dot(ray.getDirection(), ray.getDirection());
+    double b = 2 * glm::dot(L, ray.getDirection());
+    double c = glm::dot(L, L) - radius * radius;
     if (b * b - 4 * a * c > 0) {
         
         if (!solveQuadratic(a, b, c, t0, t1)) return nullptr;
         if (t0 > t1)
         {
-            float aux = t0;
+            double aux = t0;
             t0 = t1;
             t1 = aux;
         }
@@ -28,7 +28,7 @@ CollisionPoint* Sphere::intersects(const Ray& ray)
         
         CollisionPoint* closestPoint = new CollisionPoint();
 
-        closestPoint->position = ray.getOrigin() + ray.getDirection() * (float)t0 ;
+        closestPoint->position = ray.getOrigin() + ray.getDirection() * t0 ;
         closestPoint->normal = glm::normalize(closestPoint->position - position);
         closestPoint->position = closestPoint->position + closestPoint->normal * CORRECTION;
         closestPoint->hitDir = ray.getDirection();

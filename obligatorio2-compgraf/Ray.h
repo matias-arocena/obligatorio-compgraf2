@@ -4,11 +4,13 @@
 class Ray
 {
 public:
-	Ray(glm::vec3 origin, glm::vec3 direction);
-	glm::vec3 getOrigin() const;
-	glm::vec3 getDirection() const;
+	Ray(glm::dvec3 origin, glm::dvec3 direction, double currentMedium);
+	glm::dvec3 getOrigin() const;
+	glm::dvec3 getDirection() const;
+	double getMedium() const;
 private:
-	glm::vec3 origin;
-	glm::vec3 direction;
+	double medium;
+	glm::dvec3 origin;
+	glm::dvec3 direction;
 };
 

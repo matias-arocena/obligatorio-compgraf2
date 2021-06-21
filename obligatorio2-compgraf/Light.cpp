@@ -1,6 +1,6 @@
 #include "Light.h"
 
-Light::Light(Color color, float intensity) : color{color}, intensity{intensity}
+Light::Light(Color color, double intensity) : color{color}, intensity{intensity}
 {
 }
 
@@ -9,7 +9,7 @@ Color Light::getColor()
     return color;
 }
 
-float Light::getIntensity()
+double Light::getIntensity()
 {
     return intensity;
 }

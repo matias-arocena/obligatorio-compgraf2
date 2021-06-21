@@ -1,17 +1,23 @@
 #include "Ray.h"
 
-Ray::Ray(glm::vec3 origin, glm::vec3 direction) : origin {origin}, direction {glm::normalize(direction)}
+Ray::Ray(glm::dvec3 origin, glm::dvec3 direction, double medium) : 
+	origin {origin}, direction {glm::normalize(direction)}, medium{medium}
 { 
 }
 
-glm::vec3 Ray::getOrigin() const
+glm::dvec3 Ray::getOrigin() const
 {
 	return origin;
 }
 
-glm::vec3 Ray::getDirection() const
+glm::dvec3 Ray::getDirection() const
 {
 	return direction;
+}
+
+double Ray::getMedium() const
+{
+	return medium;
 }
 
 

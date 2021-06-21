@@ -6,24 +6,24 @@ CollisionPoint* SceneObject::intersects(const Ray& ray)
     return nullptr;
 }
 
-float SceneObject::getReflectionCoefficient()
+double SceneObject::getReflectionCoefficient()
 {
     return reflectionCoefficient;
 }
 
-float SceneObject::getShininess()
+double SceneObject::getShininess()
 {
     return shininess;
 }
 
-float SceneObject::getTransmissionCoefficient()
+double SceneObject::getTransmissionCoefficient()
 {
     return transmissionCoefficient;
 }
 
-float SceneObject::getMedium()
+double SceneObject::getMedium()
 {
-    return 0.0f;
+    return transmissionCoefficient;
 }
 
 bool SceneObject::solveQuadratic(const double& a, const double& b, const double& c, double& x0, double& x1)
@@ -32,7 +32,7 @@ bool SceneObject::solveQuadratic(const double& a, const double& b, const double&
     if (discr < 0) return false;
     else if (discr == 0) x0 = x1 = -0.5 * b / a;
     else {
-        float q = (b > 0) ?
+        double q = (b > 0) ?
             -0.5 * (b + sqrt(discr)) :
             -0.5 * (b - sqrt(discr));
         x0 = q / a;
@@ -40,7 +40,7 @@ bool SceneObject::solveQuadratic(const double& a, const double& b, const double&
     }
     if (x0 > x1)
     {
-        float aux = x0;
+        double aux = x0;
         x0 = x1;
         x1 = aux;
     }

@@ -3,18 +3,18 @@
 class Camera
 {
 public:
-	Camera(glm::vec3 position, float near, float viewportHeight);
-	glm::vec3 getPosition(); 
-	glm::vec3 getDirectionToViewport(float u, float v);
-	float getViewportHeight();
-	float getViewportWidth();
+	Camera(glm::dvec3 position, double near, double viewportHeight);
+	glm::dvec3 getPosition(); 
+	glm::dvec3 getDirectionToViewport(double u, double v);
+	double getViewportHeight();
+	double getViewportWidth();
 private:
-	float near;
-	float viewportHeight;
-	float viewportWidth;
-	glm::vec3 viewportCorner;
-	glm::vec3 position;
-	glm::vec3 uAxis;
-	glm::vec3 vAxis;
+	double near;
+	double viewportHeight;
+	double viewportWidth;
+	glm::dvec3 viewportCorner;
+	glm::dvec3 position;
+	glm::dvec3 uAxis;
+	glm::dvec3 vAxis;
 };
 
