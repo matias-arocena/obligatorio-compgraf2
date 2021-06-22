@@ -11,6 +11,7 @@
 #include "Ray.h"
 #include "SceneObject.h"
 #include "Sphere.h"
+#include "Cilinder.h"
 
 Scene::Scene()
 {
@@ -27,7 +28,7 @@ void Scene::loadSceneFromFile()
 		doc.child("projectionCenter").attribute("z").as_int()
 	);
 
-	Sphere* testSphere = new Sphere(.49f, glm::vec3(0.0, 1.0, 2.1f));
+	/*Sphere* testSphere = new Sphere(.49f, glm::vec3(0.0, 1.0, 2.1f));
 	testSphere->diffuse = Color();
 	testSphere->diffuse.rgb = glm::vec3(1, 0, 0);
 	testSphere->ambient = Color();
@@ -50,11 +51,23 @@ void Scene::loadSceneFromFile()
 	testSphere2->shininess = .0f;
 	testSphere2->alpha = 0.4f;
 	testSphere2->reflectionCoefficient = 0.0f;
-	testSphere2->transmissionCoefficient = WATER;
+	testSphere2->transmissionCoefficient = 1.f;
+	objects.push_back(testSphere2);*/
 
-	objects.push_back(testSphere2);
+	Cilinder* testCilinder = new Cilinder(.5, .5, glm::vec3(0.0, 1.0, 2.1));
+	testCilinder->diffuse = Color();
+	testCilinder->diffuse.rgb = glm::vec3(1, 0, 0);
+	testCilinder->ambient = Color();
+	testCilinder->ambient.rgb = glm::vec3(1, 0, 0);
+	testCilinder->specular = Color();
+	testCilinder->specular.rgb = glm::vec3(1, 0, 0);
+	testCilinder->shininess = .3;
+	testCilinder->alpha = 1.0;
+	testCilinder->reflectionCoefficient = 1.0f;
+	testCilinder->transmissionCoefficient = 0;
+	objects.push_back(testCilinder);
 
-	Sphere* world = new Sphere(105.f, glm::vec3(0.0, 110.0, 1.f));
+	/*Sphere* world = new Sphere(105.f, glm::vec3(0.0, 110.0, 1.f));
 	world->diffuse = Color();
 	world->diffuse.rgb = glm::vec3(0, 1, 0);
 	world->ambient = Color();
@@ -65,8 +78,7 @@ void Scene::loadSceneFromFile()
 	world->alpha = 1.f;
 	world->reflectionCoefficient = 0.f;
 	world->transmissionCoefficient = 0;
-
-	objects.push_back(world);
+	objects.push_back(world);*/
 
 	Color white;
 	white.rgb = glm::dvec3(1, 1, 1);

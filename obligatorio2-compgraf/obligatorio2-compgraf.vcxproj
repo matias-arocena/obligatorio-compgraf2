@@ -154,6 +154,7 @@
   <ItemGroup>
     <ClCompile Include="..\libs\pugixml-1.11\src\pugixml.cpp" />
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="Cilinder.cpp" />
     <ClCompile Include="ImageGenerator.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="obligatorio2-compgraf.cpp" />
@@ -165,6 +166,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="Cilinder.h" />
     <ClInclude Include="Color.h" />
     <ClInclude Include="Constants.h" />
     <ClInclude Include="ImageGenerator.h" />
