@@ -4,6 +4,6 @@
 
 struct Color {
 	glm::dvec3 rgb;
-	int reflection;
-	int transmission;
+	double reflection;
+	double transmission;
 };

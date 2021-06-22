@@ -28,7 +28,7 @@ void Scene::loadSceneFromFile()
 		doc.child("projectionCenter").attribute("z").as_int()
 	);
 
-	/*Sphere* testSphere = new Sphere(.49f, glm::vec3(0.0, 1.0, 2.1f));
+	Sphere* testSphere = new Sphere(.5f, glm::vec3(1.0, 1.0, 1.f));
 	testSphere->diffuse = Color();
 	testSphere->diffuse.rgb = glm::vec3(1, 0, 0);
 	testSphere->ambient = Color();
@@ -36,12 +36,12 @@ void Scene::loadSceneFromFile()
 	testSphere->specular = Color();
 	testSphere->specular.rgb = glm::vec3(1, 0, 0);
 	testSphere->shininess = .3;
-	testSphere->alpha = 1.0;
-	testSphere->reflectionCoefficient = 1.0f;
+	testSphere->alpha = 0.3;
+	testSphere->reflectionCoefficient = 1.f;
 	testSphere->transmissionCoefficient = 0;
 	objects.push_back(testSphere);
 
-	Sphere* testSphere2 = new Sphere(.5f, glm::vec3(0.0, 1.f, 1.f));
+	Sphere* testSphere2 = new Sphere(.5f, glm::vec3(-1.0, 1.f, 1.f));
 	testSphere2->diffuse = Color();
 	testSphere2->diffuse.rgb = glm::vec3(1, 1, 1);
 	testSphere2->ambient = Color();
@@ -49,10 +49,9 @@ void Scene::loadSceneFromFile()
 	testSphere2->specular = Color();
 	testSphere2->specular.rgb = glm::vec3(1, 1, 1);
 	testSphere2->shininess = .0f;
-	testSphere2->alpha = 0.4f;
+	testSphere2->alpha = .4f;
 	testSphere2->reflectionCoefficient = 0.0f;
-	testSphere2->transmissionCoefficient = 1.f;
-	objects.push_back(testSphere2);*/
+	testSphere2->transmissionCoefficient = 1.0;
 
 	Cilinder* testCilinder = new Cilinder(.5, .5, glm::vec3(0.0, 1.0, 2.1));
 	testCilinder->diffuse = Color();
@@ -99,7 +98,7 @@ void Scene::loadSceneFromFile()
 	maxDepth = 10;
 }
 
-void Scene::render(SDL_Renderer* renderer) {
+void Scene::render(SDL_Renderer* renderer, SDL_Renderer* reflectionRenderer, SDL_Renderer* transimssionRenderer) {
 	for (int y = 0; y < SCREEN_HEIGHT; ++y) {
 		double v = (float)y / SCREEN_HEIGHT;
 		for (int x = 0; x < SCREEN_WIDTH; ++x) {
@@ -115,9 +114,14 @@ void Scene::render(SDL_Renderer* renderer) {
 			Color pixel(rayTrace(ray, 1));
 
 
-
 			SDL_SetRenderDrawColor(renderer, static_cast<Uint8>(255 * pixel.rgb.r), static_cast<Uint8>(255 * pixel.rgb.g), static_cast<Uint8>(255 * pixel.rgb.b), SDL_ALPHA_OPAQUE);
 			SDL_RenderDrawPoint(renderer, x, y);
+
+			SDL_SetRenderDrawColor(reflectionRenderer, static_cast<Uint8>(255 * pixel.reflection), static_cast<Uint8>(255 * pixel.reflection), static_cast<Uint8>(255 * pixel.reflection), SDL_ALPHA_OPAQUE);
+			SDL_RenderDrawPoint(reflectionRenderer, x, y);
+			
+			SDL_SetRenderDrawColor(transimssionRenderer, static_cast<Uint8>(255 * pixel.transmission), static_cast<Uint8>(255 * pixel.transmission), static_cast<Uint8>(255 * pixel.transmission), SDL_ALPHA_OPAQUE);
+			SDL_RenderDrawPoint(transimssionRenderer, x, y);
 		}
 	}
 }
@@ -162,18 +166,14 @@ Color Scene::shadow(const CollisionPoint* hit, const Ray& ray, int depth)
 				CollisionPoint* otherHit = obj->intersects(rayToLight);
 				if (otherHit != nullptr && otherHit->distanceFromOrigin < glm::length(light->getPosition() - otherHit->position)) 
 				{
-					std::cout << "hit " << hit->position.x << " " << hit->position.y << " " << hit->position.z << std::endl;
-
 					if (otherHit->object != hit->object &&
 						otherHit->object->alpha == 1.f)
 					{
-						std::cout << "object b " << otherHit->object->diffuse.rgb.b << std::endl;
 						in_shade = true;
 						break;
 					}
 					else
 					{
-						std::cout << "modified intensity " << std::endl;
 						modifiedIntensity *= 1 - otherHit->object->alpha;
 						test = true;
 					}
@@ -206,26 +206,24 @@ Color Scene::shadow(const CollisionPoint* hit, const Ray& ray, int depth)
 		Color reflectiveColor;
 		reflectiveColor.rgb = glm::dvec3(0, 0, 0);
 		if (hit->object->getReflectionCoefficient() > 0) {
-			std::cout << "reflecting" << std::endl;
 			Ray reflectiveRay = getReflectiveRay(ray, *hit);
 			reflectiveColor = rayTrace(reflectiveRay, depth + 1);
+			reflectiveColor.reflection = hit->object->reflectionCoefficient;
 		}
 
 		Color transmissionColor;
 		transmissionColor.rgb = glm::dvec3(0, 0, 0);
 		if (hit->object->getTransmissionCoefficient() > 0) {
 			if (kr < 1) {
-				//std::cout << "refracting" << std::endl;
 				Ray refractionRay = getTransmissionRay(ray, *hit);
 				transmissionColor = rayTrace(refractionRay, depth + 1);
-				bool DEBUG = transmissionColor.rgb.r < 0.3 && transmissionColor.rgb.g < 0.3 && transmissionColor.rgb.b < 0.3;
-				if (DEBUG) {
-					transmissionColor = rayTrace(refractionRay, depth + 1);
-				}
+				transmissionColor.transmission = hit->object->alpha;
 			}
 		}
 
 		result.rgb = (reflectiveColor.rgb * kr + transmissionColor.rgb * (1 - kr)) * (1 - hit->object->alpha);
+		result.transmission = transmissionColor.transmission;
+		result.reflection = reflectiveColor.reflection;
 	}
 
 	result.rgb += (hit->object->ambient.rgb * ambientLight->getIntensity() + diffuse.rgb + specular.rgb) * hit->object->alpha;
