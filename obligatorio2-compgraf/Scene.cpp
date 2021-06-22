@@ -12,6 +12,7 @@
 #include "SceneObject.h"
 #include "Sphere.h"
 #include "Cilinder.h"
+#include "Plane.h"
 
 Scene::Scene()
 {
@@ -27,7 +28,7 @@ void Scene::loadSceneFromFile()
 		doc.child("projectionCenter").attribute("y").as_int(),
 		doc.child("projectionCenter").attribute("z").as_int()
 	);
-
+	/*
 	Sphere* testSphere = new Sphere(.5f, glm::vec3(1.0, 1.0, 1.f));
 	testSphere->diffuse = Color();
 	testSphere->diffuse.rgb = glm::vec3(1, 0, 0);
@@ -65,8 +66,12 @@ void Scene::loadSceneFromFile()
 	testCilinder->reflectionCoefficient = 1.0f;
 	testCilinder->transmissionCoefficient = 0;
 	objects.push_back(testCilinder);
+	*/
 
-	/*Sphere* world = new Sphere(105.f, glm::vec3(0.0, 110.0, 1.f));
+	Plane* world = new Plane(
+		glm::dvec3(0, 0, 0),
+		glm::dvec3(0.1, 0.9, 0.)
+	);
 	world->diffuse = Color();
 	world->diffuse.rgb = glm::vec3(0, 1, 0);
 	world->ambient = Color();
@@ -77,7 +82,7 @@ void Scene::loadSceneFromFile()
 	world->alpha = 1.f;
 	world->reflectionCoefficient = 0.f;
 	world->transmissionCoefficient = 0;
-	objects.push_back(world);*/
+	objects.push_back(world);
 
 	Color white;
 	white.rgb = glm::dvec3(1, 1, 1);

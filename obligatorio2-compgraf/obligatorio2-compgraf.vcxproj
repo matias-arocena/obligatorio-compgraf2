@@ -153,11 +153,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\libs\pugixml-1.11\src\pugixml.cpp" />
+    <ClCompile Include="Box.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Cilinder.cpp" />
     <ClCompile Include="ImageGenerator.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="obligatorio2-compgraf.cpp" />
+    <ClCompile Include="Plane.cpp" />
     <ClCompile Include="PositionLight.cpp" />
     <ClCompile Include="Ray.cpp" />
     <ClCompile Include="Scene.cpp" />
@@ -165,12 +167,14 @@
     <ClCompile Include="Sphere.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Box.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Cilinder.h" />
     <ClInclude Include="Color.h" />
     <ClInclude Include="Constants.h" />
     <ClInclude Include="ImageGenerator.h" />
     <ClInclude Include="Light.h" />
+    <ClInclude Include="Plane.h" />
     <ClInclude Include="PositionLight.h" />
     <ClInclude Include="Ray.h" />
     <ClInclude Include="Scene.h" />
