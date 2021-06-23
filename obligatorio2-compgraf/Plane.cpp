@@ -10,10 +10,10 @@ Plane::Plane(glm::dvec3 normal, glm::dvec3 point, glm::dvec3 up, double length, 
 
 CollisionPoint* Plane::intersects(const Ray& ray)
 {
-    double denominator = glm::dot(normal, ray.getDirection());
+    double denominator = glm::dot(-normal, ray.getDirection());
     if (denominator > 0.000001) {
         glm::dvec3 p = point - ray.getOrigin();
-        double t = glm::dot(p, normal) / denominator;
+        double t = glm::dot(p, -normal) / denominator;
 
         glm::dvec3 candidate = ray.getOrigin() + t * ray.getDirection();
 

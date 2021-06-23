@@ -1,13 +1,13 @@
 <?xml version="1.0"?>
 <scene>
-	<camera position="0 0 -2" lookAt="0 0 0" vup="0 1 0" fov="90" />
+	<camera position="0 1 0" lookAt="0 2.5 10" vup="0 1 0" fov="90" />
 	<background color="0.8 0.8 1" />
 	<raytrace depth="10" />
 	<objects>
-		<object type="sphere" radius="0.5" position="0 -1 0" 
+		<!--<object type="sphere" radius="0.5" position="0 -1 0" 
 				alpha="1" shininess="0.5" reflectionCoefficient="0" transmissionCoefficient="0" 
 				ambient="1 0 0" diffuse="1 0 0" specular="1 0 0" />
-		<!--object type="box" position="0 1 2" up="0 1 0" front="0 0 1" height="0.5" length="1" width="0.5"
+		object type="box" position="0 1 2" up="0 1 0" front="0 0 1" height="0.5" length="1" width="0.5"
 				alpha="1" shininess="0" reflectionCoefficient="0" transmissionCoefficient="0"
 				ambient="1 0.25 0.5" diffuse="1 0.25 0.5" specular="1 0.25 0.5" />
 		<object type="cilinder" position="0 1 2.1" radius="0.5" height="2"
@@ -15,10 +15,39 @@
 						ambient="1 0 0" diffuse="1 0 0" specular="1 0 0" />
 		<object type="plane" position="0 0 0" normal="0 0 1" up="0 1 0" length="1" height="0.5"
 						alpha="1" shininess="0.3" reflectionCoefficient="1.0" transmissionCoefficient="0"
-						ambient="1 0 0" diffuse="1 0 0" specular="1 0 0" /-->
+						ambient="1 0 0" diffuse="1 0 0" specular="1 0 0" />-->
+
+    <!-- WALLS -->
+    <!-- back -->
+    <object type="plane" position="0 -0 10" normal="0 0 -1" up="0 1 0" length="10" height="5"
+						alpha="1" shininess="0.3" reflectionCoefficient="1.0" transmissionCoefficient="0"
+						ambient="1 1 1" diffuse="1 1 1" specular="1 1 1" />
+    <!-- top -->
+    <object type="plane" position="0 -2.5 5" normal="0 1 0" up="0 0 1" length="10" height="10"
+						alpha="1" shininess="0.3" reflectionCoefficient="1.0" transmissionCoefficient="0"
+						ambient="0.75 0.75 0.75" diffuse="0.75 0.75 0.75" specular="0.75 0.75 0.75" />
+    <!-- bot -->
+    <object type="plane" position="0 2.5 5" normal="0 -1 0" up="0 0 1" length="10" height="10"
+						alpha="1" shininess="0.3" reflectionCoefficient="1.0" transmissionCoefficient="0"
+						ambient="1 1 1" diffuse="1 1 1" specular="1 1 1" />
+    <!-- right -->
+    <object type="plane" position="5 -0 5" normal="-1 0 0" up="0 1 0" length="10" height="5"
+						alpha="1" shininess="0.3" reflectionCoefficient="1.0" transmissionCoefficient="0"
+						ambient="0 1 0" diffuse="0 1 0" specular="0 1 0" />
+    <!-- left -->
+    <object type="plane" position="-5 -0 5" normal="1 0 0" up="0 1 0" length="10" height="5"
+						alpha="1" shininess="0.3" reflectionCoefficient="1.0" transmissionCoefficient="0"
+						ambient="1 0 0" diffuse="1 0 0" specular="1 0 0" />
+  
+    <!-- box -->
+		<object type="box" position="0 2 7" up="0 -1 0" front="0 0 -1" height="1" length="5" width="2"
+					alpha="1" shininess="0" reflectionCoefficient="0" transmissionCoefficient="0"
+					ambient="0 0 1" diffuse="0 0 1" specular="0 0 1" />
 	</objects>
+  
 	<lights>
 		<light type="ambient" intensity="0.3" />
-		<light position="0 0 -2" intensity="1" />
+		<light position="0 -2 4" intensity="0.3" />
+		<light position="0 -2 7" intensity="0.3" />
 	</lights>
 </scene>
