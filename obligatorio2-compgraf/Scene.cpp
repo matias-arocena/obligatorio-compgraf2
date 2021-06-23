@@ -69,8 +69,10 @@ void Scene::loadSceneFromFile()
 	*/
 
 	Plane* world = new Plane(
-		glm::dvec3(0, 0, 0),
-		glm::dvec3(0.1, 0.9, 0.)
+		glm::dvec3(0.33, 0.33, 0.33),
+		glm::dvec3(0.1, 0, 1.),
+		glm::dvec3(0,1,0), 
+		1, 0.5
 	);
 	world->diffuse = Color();
 	world->diffuse.rgb = glm::vec3(0, 1, 0);
