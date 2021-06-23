@@ -28,7 +28,6 @@ void Scene::loadSceneFromFile()
 		doc.child("projectionCenter").attribute("y").as_int(),
 		doc.child("projectionCenter").attribute("z").as_int()
 	);
-	/*
 	Sphere* testSphere = new Sphere(.5f, glm::vec3(1.0, 1.0, 1.f));
 	testSphere->diffuse = Color();
 	testSphere->diffuse.rgb = glm::vec3(1, 0, 0);
@@ -37,11 +36,12 @@ void Scene::loadSceneFromFile()
 	testSphere->specular = Color();
 	testSphere->specular.rgb = glm::vec3(1, 0, 0);
 	testSphere->shininess = .3;
-	testSphere->alpha = 0.3;
-	testSphere->reflectionCoefficient = 1.f;
+	testSphere->alpha = 1;
+	testSphere->reflectionCoefficient = 0.f;
 	testSphere->transmissionCoefficient = 0;
 	objects.push_back(testSphere);
 
+	/*
 	Sphere* testSphere2 = new Sphere(.5f, glm::vec3(-1.0, 1.f, 1.f));
 	testSphere2->diffuse = Color();
 	testSphere2->diffuse.rgb = glm::vec3(1, 1, 1);
@@ -66,23 +66,8 @@ void Scene::loadSceneFromFile()
 	testCilinder->reflectionCoefficient = 1.0f;
 	testCilinder->transmissionCoefficient = 0;
 	objects.push_back(testCilinder);
-	*/
 
-	Plane* world = new Plane(
-		glm::dvec3(0, 0, 0),
-		glm::dvec3(0.1, 0.9, 0.)
-	);
-	world->diffuse = Color();
-	world->diffuse.rgb = glm::vec3(0, 1, 0);
-	world->ambient = Color();
-	world->ambient.rgb = glm::vec3(0, 1, 0);
-	world->specular = Color();
-	world->specular.rgb = glm::vec3(0, 1, 0);
-	world->shininess = 0.f;
-	world->alpha = 1.f;
-	world->reflectionCoefficient = 0.f;
-	world->transmissionCoefficient = 0;
-	objects.push_back(world);
+	*/
 
 	Color white;
 	white.rgb = glm::dvec3(1, 1, 1);
@@ -98,26 +83,23 @@ void Scene::loadSceneFromFile()
 	backgroudColor.transmission = 0;
 
 	//TODO: obtener camara de xml
-	camera = new Camera(glm::vec3(0, 0, 0) , 1.f, 2.f);
+	camera = new Camera(glm::dvec3(0, 0, -10), glm::dvec3(0, 2, 0), glm::vec3(0, 1, 0), 90, 1.0, 2.0);
+	//camera = new Camera(glm::vec3(0, 0, 0) , 1.f, 2.f);
 
 	maxDepth = 10;
 }
 
 void Scene::render(SDL_Renderer* renderer, SDL_Renderer* reflectionRenderer, SDL_Renderer* transimssionRenderer) {
 	for (int y = 0; y < SCREEN_HEIGHT; ++y) {
-		double v = (float)y / SCREEN_HEIGHT;
 		for (int x = 0; x < SCREEN_WIDTH; ++x) {
-			double u = (float)x / SCREEN_WIDTH;
-
 
 			Ray ray(
 				camera->getPosition(),
-				camera->getDirectionToViewport(u, v),
+				camera->getDirectionToViewport(x -1, y-1),
 				VACUUM
 			);
 
 			Color pixel(rayTrace(ray, 1));
-
 
 			SDL_SetRenderDrawColor(renderer, static_cast<Uint8>(255 * pixel.rgb.r), static_cast<Uint8>(255 * pixel.rgb.g), static_cast<Uint8>(255 * pixel.rgb.b), SDL_ALPHA_OPAQUE);
 			SDL_RenderDrawPoint(renderer, x, y);

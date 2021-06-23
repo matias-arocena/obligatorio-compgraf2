@@ -2,31 +2,25 @@
 
 #include "Constants.h"
 
-Camera::Camera(glm::dvec3 position, double near, double viewportHeight) : position{ position }, near{ near }, viewportHeight{ viewportHeight }
+#define _USE_MATH_DEFINES
+#include <math.h>
+
+Camera::Camera(glm::dvec3 position, glm::dvec3 lookAt, glm::dvec3 vup, double fov, double near, double viewportHeight) :
+	position{ position }, lookAt{ lookAt }, vup{ vup }, fov{ fov }
 {
     
-    viewportWidth = ASPECT_RATIO * viewportHeight;
-    uAxis = glm::dvec3(viewportWidth, 0.f, 0.f);
-    vAxis = glm::dvec3(0.f, viewportHeight, 0.f);
+	glm::dvec3 t = lookAt - position;
+	glm::dvec3 cross = glm::cross(vup, t);
+	glm::dvec3 b = glm::normalize(glm::cross(vup, t));
+	t = glm::normalize(t);
 
-    viewportCorner = position - uAxis / 2.0 - vAxis / 2.0 + glm::dvec3(0,0, near);
-/*
-	Vector3 t = s.camera.center - s.camera.eye;
-	Vector3 b = s.camera.up.cross(t);
+	double gx = std::tan((fov * M_PI / 180) / 2);
+	double gy = gx * (SCREEN_HEIGHT / SCREEN_HEIGHT);
 
-	Vector3 tn = t.normalize();
-	Vector3 bn = b.normalize();
-	Vector3 vn = tn.cross(bn);
+	uAxis = (2 * gx * b) / static_cast<double>(SCREEN_WIDTH - 1);
+	vAxis = (2 * gy * glm::normalize(glm::cross(t, b))) / static_cast<double>(SCREEN_WIDTH - 1);
 
-	double gx = tan((s.camera.fov * M_PI / 180) / 2);
-	double gy = gx * ((float)s.height / (float)s.width);
-
-	Vector3 qx = (2 * gx * bn) / (s.width - 1);
-	Vector3 qy = (2 * gy * vn) / (s.height - 1);
-
-	Vector3 p1m = tn - gx * bn - gy * vn;
-
-	*/
+	viewportCorner = t - gx * b - gy * glm::normalize(glm::cross(t, b));
 }
 
 glm::dvec3 Camera::getPosition()
@@ -36,7 +30,7 @@ glm::dvec3 Camera::getPosition()
 
 glm::dvec3 Camera::getDirectionToViewport(double u, double v)
 {
-    return viewportCorner + u * uAxis + v * vAxis + position;
+    return viewportCorner + u * uAxis + v * vAxis;
 }
 
 double Camera::getViewportHeight()
