@@ -19,6 +19,6 @@
 	</objects>
 	<lights>
 		<light type="ambient" intensity="0.3" />
-		<light position="0 -3 0" intensity="1" />
+		<light position="0 0 -2" intensity="1" />
 	</lights>
 </scene>

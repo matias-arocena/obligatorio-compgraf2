@@ -295,7 +295,7 @@ Color Scene::shadow(const CollisionPoint* hit, const Ray& ray, int depth)
 				double angle = std::asin(glm::dot(hit->normal, rayToLight.getDirection()));
 				if (angle > 0)
 				{
-					if (test)
+					//if (test)
 						//std::cout << "intensity: " << modifiedIntensity << std::endl;
 					diffuse.rgb += angle * modifiedIntensity * hit->object->diffuse.rgb;
 					/*if (hit->object->getReflectionCoefficient() == 0) brightness += angle * modifiedIntensity; //TODO: diffuse coef?*/
