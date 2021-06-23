@@ -13,6 +13,7 @@
 #include "Sphere.h"
 #include "Cilinder.h"
 #include "Plane.h"
+#include "Box.h"
 
 Scene::Scene()
 {
@@ -28,6 +29,7 @@ void Scene::loadSceneFromFile()
 		doc.child("projectionCenter").attribute("y").as_int(),
 		doc.child("projectionCenter").attribute("z").as_int()
 	);
+
 	Sphere* testSphere = new Sphere(.5f, glm::vec3(1.0, 1.0, 1.f));
 	testSphere->diffuse = Color();
 	testSphere->diffuse.rgb = glm::vec3(1, 0, 0);
@@ -66,8 +68,34 @@ void Scene::loadSceneFromFile()
 	testCilinder->reflectionCoefficient = 1.0f;
 	testCilinder->transmissionCoefficient = 0;
 	objects.push_back(testCilinder);
+		/*Plane* world = new Plane(
+		glm::dvec3(0.33, 0.33, 0.33),
+		glm::dvec3(0.1, 0, 1.),
+		glm::dvec3(0,1,0), 
+		1, 0.5
+	);
+	world->diffuse = Color();
+	world->diffuse.rgb = glm::vec3(0, 1, 0);
+	world->ambient = Color();
+	world->ambient.rgb = glm::vec3(0, 1, 0);
+	world->specular = Color();
+	world->specular.rgb = glm::vec3(0, 1, 0);
+	world->shininess = 0.f;
+	world->alpha = 1.f;
+	world->reflectionCoefficient = 0.f;
+	world->transmissionCoefficient = 0;
+	objects.push_back(world);*/
 
-	*/
+	Box* boxTest = new Box(glm::dvec3(0, 1, 2), glm::dvec3(0, 1, 0), glm::dvec3(0, 0, 1), 0.5, 1, 0.5);
+	boxTest->setData(
+		glm::vec3(1, 0.25, 0.5),
+		glm::vec3(1, 0.25, 0.5),
+		glm::vec3(1, 0.25, 0.5),
+		0.f,
+		1.f,
+		0.f,
+		0.f);
+	objects.push_back(boxTest);
 
 	Color white;
 	white.rgb = glm::dvec3(1, 1, 1);
@@ -172,7 +200,7 @@ Color Scene::shadow(const CollisionPoint* hit, const Ray& ray, int depth)
 				if (angle > 0)
 				{
 					if (test)
-						std::cout << "intensity: " << modifiedIntensity << std::endl;
+						//std::cout << "intensity: " << modifiedIntensity << std::endl;
 					diffuse.rgb += angle * modifiedIntensity * hit->object->diffuse.rgb;
 					/*if (hit->object->getReflectionCoefficient() == 0) brightness += angle * modifiedIntensity; //TODO: diffuse coef?*/
 
