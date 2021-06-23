@@ -68,9 +68,11 @@ void Scene::loadSceneFromFile()
 			);
 		}
 		else if (type == "cilinder") {
-			object = new Cilinder(.5, .5, glm::vec3(
-				position
-			));
+			object = new Cilinder(
+				obj.attribute("radius").as_double(), 
+				obj.attribute("height").as_double(), 
+				glm::vec3(position)
+			);
 
 		}
 		else if (type == "plane") {
