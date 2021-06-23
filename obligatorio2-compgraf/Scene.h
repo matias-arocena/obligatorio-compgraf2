@@ -21,7 +21,7 @@ public:
 	Scene();
 	void loadSceneFromFile();
 	std::vector<double> getXmlVector(pugi::xml_attribute attr);
-	void render(SDL_Renderer* renderer, SDL_Renderer* reflectionRenderer, SDL_Renderer* transmissionRenderer);
+	void render(SDL_Renderer* renderer, SDL_Renderer* reflectionRenderer, SDL_Renderer* transimssionRenderer, SDL_Renderer* ambientRenderer, SDL_Renderer* diffuseRenderer, SDL_Renderer* specularRenderer);
 private:
 	int maxDepth;
 	glm::vec3 projectionCenter;
