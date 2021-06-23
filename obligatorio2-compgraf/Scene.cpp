@@ -188,6 +188,7 @@ void Scene::loadSceneFromFile()
 				white,
 				l.attribute("intensity").as_double()
 			);
+			lights.push_back(light);
 		}
 	}
 	

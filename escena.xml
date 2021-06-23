@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <scene>
-	<camera position="0 2 3" lookAt="0 0 0" vup="0 1 0" fov="90" />
+	<camera position="0 0 -2" lookAt="0 0 0" vup="0 1 0" fov="90" />
 	<background color="0.8 0.8 1" />
 	<raytrace depth="10" />
 	<objects>
-		<object type="sphere" radius="0.5" position="0 0 0" 
-				alpha="1" shininess="0.3" reflectionCoefficient="0" transmissionCoefficient="0" 
+		<object type="sphere" radius="0.5" position="0 -1 0" 
+				alpha="1" shininess="0.5" reflectionCoefficient="0" transmissionCoefficient="0" 
 				ambient="1 0 0" diffuse="1 0 0" specular="1 0 0" />
 		<!--object type="box" position="0 1 2" up="0 1 0" front="0 0 1" height="0.5" length="1" width="0.5"
 				alpha="1" shininess="0" reflectionCoefficient="0" transmissionCoefficient="0"
@@ -19,6 +19,6 @@
 	</objects>
 	<lights>
 		<light type="ambient" intensity="0.3" />
-		<light position="2 -1 -1" intensity="1" />
+		<light position="0 -3 0" intensity="1" />
 	</lights>
 </scene>
