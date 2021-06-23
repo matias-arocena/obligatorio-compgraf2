@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 
+#include <pugixml.hpp>
 #include <glm/glm.hpp>
 
 #include "Camera.h"
@@ -19,6 +20,7 @@ class Scene
 public:
 	Scene();
 	void loadSceneFromFile();
+	std::vector<double> getXmlVector(pugi::xml_attribute attr);
 	void render(SDL_Renderer* renderer, SDL_Renderer* reflectionRenderer, SDL_Renderer* transmissionRenderer);
 private:
 	int maxDepth;

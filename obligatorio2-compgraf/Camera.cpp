@@ -5,7 +5,7 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-Camera::Camera(glm::dvec3 position, glm::dvec3 lookAt, glm::dvec3 vup, double fov, double near, double viewportHeight) :
+Camera::Camera(glm::dvec3 position, glm::dvec3 lookAt, glm::dvec3 vup, double fov) :
 	position{ position }, lookAt{ lookAt }, vup{ vup }, fov{ fov }
 {
     
@@ -33,12 +33,3 @@ glm::dvec3 Camera::getDirectionToViewport(double u, double v)
     return viewportCorner + u * uAxis + v * vAxis;
 }
 
-double Camera::getViewportHeight()
-{
-    return viewportHeight;
-}
-
-double Camera::getViewportWidth()
-{
-    return viewportWidth;
-}

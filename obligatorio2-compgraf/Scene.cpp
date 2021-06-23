@@ -2,9 +2,12 @@
 
 #include <iostream>
 #include <algorithm>   
+#include <string>
+#include <sstream>
+#include <vector>
+#include <iterator>
 
 #include <SDL.h>
-#include <pugixml.hpp>
 #include <glm/glm.hpp>
 
 
@@ -24,97 +27,189 @@ void Scene::loadSceneFromFile()
 	pugi::xml_document doc;
 	pugi::xml_parse_result result = doc.load_file("../escena.xml");
 
-	projectionCenter = glm::vec3(
-		doc.child("projectionCenter").attribute("x").as_int(),
-		doc.child("projectionCenter").attribute("y").as_int(),
-		doc.child("projectionCenter").attribute("z").as_int()
+	std::vector<double> cameraPosition = getXmlVector(doc.child("scene").child("camera").attribute("position"));
+	std::vector<double> cameraLookAt = getXmlVector(doc.child("scene").child("camera").attribute("lookAt"));
+	std::vector<double> vup = getXmlVector(doc.child("scene").child("camera").attribute("vup"));
+
+	camera = new Camera(
+		glm::dvec3(
+			cameraPosition[0],
+			cameraPosition[1],
+			cameraPosition[2]
+		),
+		glm::dvec3(
+			cameraLookAt[0],
+			cameraLookAt[1],
+			cameraLookAt[2]
+		),
+		glm::dvec3(
+			vup[0],
+			vup[1],
+			vup[2]
+		),
+		doc.child("scene").child("camera").attribute("fov").as_double()
 	);
 
-	Sphere* testSphere = new Sphere(.5f, glm::vec3(1.0, 1.0, 1.f));
-	testSphere->diffuse = Color();
-	testSphere->diffuse.rgb = glm::vec3(1, 0, 0);
-	testSphere->ambient = Color();
-	testSphere->ambient.rgb = glm::vec3(1, 0, 0);
-	testSphere->specular = Color();
-	testSphere->specular.rgb = glm::vec3(1, 0, 0);
-	testSphere->shininess = .3;
-	testSphere->alpha = 1;
-	testSphere->reflectionCoefficient = 0.f;
-	testSphere->transmissionCoefficient = 0;
-	objects.push_back(testSphere);
+	auto xmlObjects = doc.child("scene").child("objects").children();
+	for (auto obj : xmlObjects) {
+		SceneObject *object;
 
-	/*
-	Sphere* testSphere2 = new Sphere(.5f, glm::vec3(-1.0, 1.f, 1.f));
-	testSphere2->diffuse = Color();
-	testSphere2->diffuse.rgb = glm::vec3(1, 1, 1);
-	testSphere2->ambient = Color();
-	testSphere2->ambient.rgb = glm::vec3(1, 1, 1);
-	testSphere2->specular = Color();
-	testSphere2->specular.rgb = glm::vec3(1, 1, 1);
-	testSphere2->shininess = .0f;
-	testSphere2->alpha = .4f;
-	testSphere2->reflectionCoefficient = 0.0f;
-	testSphere2->transmissionCoefficient = 1.0;
+		std::string type = obj.attribute("type").as_string();
+		std::vector<double> positionArray = getXmlVector(obj.attribute("position"));
+		glm::dvec3 position = glm::dvec3(
+			positionArray[0],
+			positionArray[1],
+			positionArray[2]
+		);
+		if (type == "sphere") {
+			object = new Sphere(
+				obj.attribute("radius").as_double(),
+				position
+			);
+		}
+		else if (type == "cilinder") {
+			object = new Cilinder(.5, .5, glm::vec3(
+				position
+			));
 
-	Cilinder* testCilinder = new Cilinder(.5, .5, glm::vec3(0.0, 1.0, 2.1));
-	testCilinder->diffuse = Color();
-	testCilinder->diffuse.rgb = glm::vec3(1, 0, 0);
-	testCilinder->ambient = Color();
-	testCilinder->ambient.rgb = glm::vec3(1, 0, 0);
-	testCilinder->specular = Color();
-	testCilinder->specular.rgb = glm::vec3(1, 0, 0);
-	testCilinder->shininess = .3;
-	testCilinder->alpha = 1.0;
-	testCilinder->reflectionCoefficient = 1.0f;
-	testCilinder->transmissionCoefficient = 0;
-	objects.push_back(testCilinder);
-		/*Plane* world = new Plane(
-		glm::dvec3(0.33, 0.33, 0.33),
-		glm::dvec3(0.1, 0, 1.),
-		glm::dvec3(0,1,0), 
-		1, 0.5
-	);
-	world->diffuse = Color();
-	world->diffuse.rgb = glm::vec3(0, 1, 0);
-	world->ambient = Color();
-	world->ambient.rgb = glm::vec3(0, 1, 0);
-	world->specular = Color();
-	world->specular.rgb = glm::vec3(0, 1, 0);
-	world->shininess = 0.f;
-	world->alpha = 1.f;
-	world->reflectionCoefficient = 0.f;
-	world->transmissionCoefficient = 0;
-	objects.push_back(world);*/
+		}
+		else if (type == "plane") {
+			std::vector<double> normal = getXmlVector(obj.attribute("normal"));
+			std::vector<double> up = getXmlVector(obj.attribute("up"));
+			
+			object = new Plane(
+				glm::dvec3(
+					normal[0],
+					normal[1],
+					normal[2]
+				),
+				position,
+				glm::dvec3(
+					up[0],
+					up[1],
+					up[2]
+				),
+				obj.attribute("length").as_double(),
+				obj.attribute("height").as_double()
+			);
+		}
+		else if (type == "box") {
+			std::vector<double> up = getXmlVector(obj.attribute("up"));
+			std::vector<double> front = getXmlVector(obj.attribute("front"));
 
-	Box* boxTest = new Box(glm::dvec3(0, 1, 2), glm::dvec3(0, 1, 0), glm::dvec3(0, 0, 1), 0.5, 1, 0.5);
-	boxTest->setData(
-		glm::vec3(1, 0.25, 0.5),
-		glm::vec3(1, 0.25, 0.5),
-		glm::vec3(1, 0.25, 0.5),
-		0.f,
-		1.f,
-		0.f,
-		0.f);
-	objects.push_back(boxTest);
+			object = new Box(
+				position,
+				glm::dvec3(
+					up[0],
+					up[1],
+					up[2]
+				),
+				glm::dvec3(
+					front[0],
+					front[1],
+					front[2]
+				),
+				obj.attribute("height").as_double(),
+				obj.attribute("length").as_double(),
+				obj.attribute("width").as_double()
+			);
+
+			std::vector<double> ambient = getXmlVector(obj.attribute("ambient"));
+			std::vector<double> diffuse = getXmlVector(obj.attribute("diffuse"));
+			std::vector<double> specular = getXmlVector(obj.attribute("specular"));
+
+			dynamic_cast<Box*>(object)->setData(
+				glm::vec3(ambient[0], ambient[1], ambient[2]),
+				glm::vec3(diffuse[0], diffuse[1], diffuse[2]),
+				glm::vec3(specular[0], specular[1], specular[2]),
+				obj.attribute("shininess").as_double(),
+				obj.attribute("alpha").as_double(),
+				obj.attribute("reflectionCoefficient").as_double(),
+				obj.attribute("transmissionCoefficient").as_double()
+			);
+		}
+		else {
+			object = new Sphere(
+				0.5,
+				glm::dvec3(0,0,0)
+			);
+		}
+
+		if (type != "box") {
+			std::vector<double> ambient = getXmlVector(obj.attribute("ambient"));
+			object->ambient.rgb = glm::dvec3(
+				ambient[0],
+				ambient[1],
+				ambient[2]
+			);
+
+			std::vector<double> diffuse = getXmlVector(obj.attribute("diffuse"));
+			object->diffuse.rgb = glm::dvec3(
+				diffuse[0],
+				diffuse[1],
+				diffuse[2]
+			);
+
+			std::vector<double> specular = getXmlVector(obj.attribute("specular"));
+			object->specular.rgb = glm::dvec3(
+				specular[0],
+				specular[1],
+				specular[2]
+			);
+
+			object->shininess = obj.attribute("shininess").as_double();
+			object->alpha = obj.attribute("alpha").as_double();
+			object->reflectionCoefficient = obj.attribute("reflectionCoefficient").as_double();
+			object->transmissionCoefficient = obj.attribute("transmissionCoefficient").as_double();
+
+		}
+
+		objects.push_back(object);
+	}
+	
 
 	Color white;
 	white.rgb = glm::dvec3(1, 1, 1);
-	ambientLight = new Light(white, .3f);
+
+	auto xmlLights = doc.child("scene").child("lights").children();
+	for (auto l : xmlLights) {
+		std::string type = l.attribute("type").as_string();
+		if (type == "ambient") {
+			ambientLight = new Light(white, l.attribute("intensity").as_double());
+		}
+		else {
+			std::vector<double> position = getXmlVector(l.attribute("position"));
+			PositionLight* light = new PositionLight(
+				glm::dvec3(
+					position[0],
+					position[1],
+					position[2]
+				),
+				white,
+				l.attribute("intensity").as_double()
+			);
+		}
+	}
 	
-	//obtener luz de xml
-	PositionLight* l1 = new PositionLight(glm::vec3(2, -1, -1), white, 1);
-	lights.push_back(l1);
-	
-	//obtener bk del xml
-	backgroudColor.rgb = glm::vec3(0.8,0.8, 1);
+	std::vector<double> bkColor = getXmlVector(doc.child("scene").child("background").attribute("color"));
+	backgroudColor.rgb = glm::vec3(
+		bkColor[0],
+		bkColor[1],
+		bkColor[2]
+	);
 	backgroudColor.reflection = 0;
 	backgroudColor.transmission = 0;
+	
+	maxDepth = doc.child("scene").child("raytrace").attribute("depth").as_int();
+}
 
-	//TODO: obtener camara de xml
-	camera = new Camera(glm::dvec3(0, 0, -10), glm::dvec3(0, 2, 0), glm::vec3(0, 1, 0), 90, 1.0, 2.0);
-	//camera = new Camera(glm::vec3(0, 0, 0) , 1.f, 2.f);
-
-	maxDepth = 10;
+std::vector<double> Scene::getXmlVector(pugi::xml_attribute attr)
+{
+	double i;
+	std::istringstream in(attr.as_string());
+	std::vector<double> vec;
+	while (in >> i) vec.push_back(i);
+	return vec;
 }
 
 void Scene::render(SDL_Renderer* renderer, SDL_Renderer* reflectionRenderer, SDL_Renderer* transimssionRenderer) {

@@ -1,13 +1,24 @@
 <?xml version="1.0"?>
-<mesh name="mesh_root">
-	<!-- here is a mesh node -->
-	some text
-	<![CDATA[someothertext]]>
-	some more text
-	<node attr1="value1" attr2="value2" />
-	<node attr1="value2">
-		<innernode/>
-	</node>
-</mesh>
-
-<projectionCenter x="0" y="0" z="100" />
+<scene>
+	<camera position="0 2 3" lookAt="0 0 0" vup="0 1 0" fov="90" />
+	<background color="0.8 0.8 1" />
+	<raytrace depth="10" />
+	<objects>
+		<object type="sphere" radius="0.5" position="0 0 0" 
+				alpha="1" shininess="0.3" reflectionCoefficient="0" transmissionCoefficient="0" 
+				ambient="1 0 0" diffuse="1 0 0" specular="1 0 0" />
+		<!--object type="box" position="0 1 2" up="0 1 0" front="0 0 1" height="0.5" length="1" width="0.5"
+				alpha="1" shininess="0" reflectionCoefficient="0" transmissionCoefficient="0"
+				ambient="1 0.25 0.5" diffuse="1 0.25 0.5" specular="1 0.25 0.5" />
+		<object type="cilinder" position="0 1 2.1" radius="0.5" height="2"
+						alpha="1" shininess="0.3" reflectionCoefficient="1.0" transmissionCoefficient="0"
+						ambient="1 0 0" diffuse="1 0 0" specular="1 0 0" />
+		<object type="plane" position="0 0 0" normal="0 0 1" up="0 1 0" length="1" height="0.5"
+						alpha="1" shininess="0.3" reflectionCoefficient="1.0" transmissionCoefficient="0"
+						ambient="1 0 0" diffuse="1 0 0" specular="1 0 0" /-->
+	</objects>
+	<lights>
+		<light type="ambient" intensity="0.3" />
+		<light position="2 -1 -1" intensity="1" />
+	</lights>
+</scene>
