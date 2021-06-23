@@ -213,7 +213,7 @@ std::vector<double> Scene::getXmlVector(pugi::xml_attribute attr)
 	return vec;
 }
 
-void Scene::render(SDL_Renderer* renderer, SDL_Renderer* reflectionRenderer, SDL_Renderer* transimssionRenderer) {
+void Scene::render(SDL_Renderer* renderer, SDL_Renderer* reflectionRenderer, SDL_Renderer* transimssionRenderer, SDL_Renderer* ambientRenderer, SDL_Renderer* diffuseRenderer, SDL_Renderer* specularRenderer) {
 	for (int y = 0; y < SCREEN_HEIGHT; ++y) {
 		for (int x = 0; x < SCREEN_WIDTH; ++x) {
 
@@ -230,9 +230,18 @@ void Scene::render(SDL_Renderer* renderer, SDL_Renderer* reflectionRenderer, SDL
 
 			SDL_SetRenderDrawColor(reflectionRenderer, static_cast<Uint8>(255 * pixel.reflection), static_cast<Uint8>(255 * pixel.reflection), static_cast<Uint8>(255 * pixel.reflection), SDL_ALPHA_OPAQUE);
 			SDL_RenderDrawPoint(reflectionRenderer, x, y);
-			
+
 			SDL_SetRenderDrawColor(transimssionRenderer, static_cast<Uint8>(255 * pixel.transmission), static_cast<Uint8>(255 * pixel.transmission), static_cast<Uint8>(255 * pixel.transmission), SDL_ALPHA_OPAQUE);
 			SDL_RenderDrawPoint(transimssionRenderer, x, y);
+
+			SDL_SetRenderDrawColor(ambientRenderer, static_cast<Uint8>(255 * pixel.ambient.r), static_cast<Uint8>(255 * pixel.ambient.g), static_cast<Uint8>(255 * pixel.ambient.b), SDL_ALPHA_OPAQUE);
+			SDL_RenderDrawPoint(ambientRenderer, x, y);
+
+			SDL_SetRenderDrawColor(diffuseRenderer, static_cast<Uint8>(255 * pixel.diffuse.r), static_cast<Uint8>(255 * pixel.diffuse.g), static_cast<Uint8>(255 * pixel.diffuse.b), SDL_ALPHA_OPAQUE);
+			SDL_RenderDrawPoint(diffuseRenderer, x, y);
+
+			SDL_SetRenderDrawColor(specularRenderer, static_cast<Uint8>(255 * pixel.specular.r), static_cast<Uint8>(255 * pixel.specular.g), static_cast<Uint8>(255 * pixel.specular.b), SDL_ALPHA_OPAQUE);
+			SDL_RenderDrawPoint(specularRenderer, x, y);
 		}
 	}
 }
@@ -254,6 +263,11 @@ Color Scene::rayTrace(const Ray& ray, int depth)
 		glm::dvec3 rgb = backgroudColor.rgb;
 		Color color;
 		color.rgb = rgb;
+		color.ambient = glm::vec3(0, 0, 0);
+		color.diffuse = glm::vec3(0, 0, 0);
+		color.specular = glm::vec3(0, 0, 0);
+		color.transmission = 0;
+		color.reflection = 0;
 		return color;
 	}
 }
@@ -341,6 +355,21 @@ Color Scene::shadow(const CollisionPoint* hit, const Ray& ray, int depth)
 	result.rgb.r = result.rgb.r * (result.rgb.r < 1.f) + (result.rgb.r >= 1);
 	result.rgb.g = result.rgb.g * (result.rgb.g < 1.f) + (result.rgb.g >= 1);
 	result.rgb.b = result.rgb.b * (result.rgb.b < 1.f) + (result.rgb.b >= 1);
+
+	result.ambient = hit->object->ambient.rgb;
+	result.ambient.r = result.ambient.r * (result.ambient.r < 1.f) + (result.ambient.r >= 1);
+	result.ambient.g = result.ambient.g * (result.ambient.g < 1.f) + (result.ambient.g >= 1);
+	result.ambient.b = result.ambient.b * (result.ambient.b < 1.f) + (result.ambient.b >= 1);
+
+	result.diffuse = diffuse.rgb;
+	result.diffuse.r = result.diffuse.r * (result.diffuse.r < 1.f) + (result.diffuse.r >= 1);
+	result.diffuse.g = result.diffuse.g * (result.diffuse.g < 1.f) + (result.diffuse.g >= 1);
+	result.diffuse.b = result.diffuse.b * (result.diffuse.b < 1.f) + (result.diffuse.b >= 1);
+
+	result.specular = specular.rgb;
+	result.specular.r = result.specular.r * (result.specular.r < 1.f) + (result.specular.r >= 1);
+	result.specular.g = result.specular.g * (result.specular.g < 1.f) + (result.specular.g >= 1);
+	result.specular.b = result.specular.b * (result.specular.b < 1.f) + (result.specular.b >= 1);
 
 	return result;
 }

@@ -30,15 +30,27 @@ int main(int argc, char* argv[]) {
     SDL_Surface* transmissionSurface = SDL_CreateRGBSurface(0, SCREEN_WIDTH, SCREEN_HEIGHT, 32, 0, 0, 0, 0);
     SDL_Renderer* transmissionRenderer = SDL_CreateSoftwareRenderer(transmissionSurface);
 
+    SDL_Surface* ambientSurface = SDL_CreateRGBSurface(0, SCREEN_WIDTH, SCREEN_HEIGHT, 32, 0, 0, 0, 0);
+    SDL_Renderer* ambientRenderer = SDL_CreateSoftwareRenderer(ambientSurface);
+
+    SDL_Surface* diffuseSurface = SDL_CreateRGBSurface(0, SCREEN_WIDTH, SCREEN_HEIGHT, 32, 0, 0, 0, 0);
+    SDL_Renderer* diffuseRenderer = SDL_CreateSoftwareRenderer(diffuseSurface);
+
+    SDL_Surface* specularSurface = SDL_CreateRGBSurface(0, SCREEN_WIDTH, SCREEN_HEIGHT, 32, 0, 0, 0, 0);
+    SDL_Renderer* specularRenderer = SDL_CreateSoftwareRenderer(specularSurface);
+
     Scene* scene = new Scene();
     scene->loadSceneFromFile();
 
-    scene->render(renderer, reflectionRenderer, transmissionRenderer);
+    scene->render(renderer, reflectionRenderer, transmissionRenderer, ambientRenderer, diffuseRenderer, specularRenderer);
 
     ImageGenerator::generateImage(mainSurface, "final", SCREEN_WIDTH, SCREEN_HEIGHT);
     ImageGenerator::generateImage(reflectionSurface, "reflection", SCREEN_WIDTH, SCREEN_HEIGHT);
     ImageGenerator::generateImage(transmissionSurface, "transmission", SCREEN_WIDTH, SCREEN_HEIGHT);
-    
+    ImageGenerator::generateImage(ambientSurface, "ambient", SCREEN_WIDTH, SCREEN_HEIGHT);
+    ImageGenerator::generateImage(diffuseSurface, "diffuse", SCREEN_WIDTH, SCREEN_HEIGHT);
+    ImageGenerator::generateImage(specularSurface, "specular", SCREEN_WIDTH, SCREEN_HEIGHT);
+
     IMG_Quit();
     SDL_Quit();
 
